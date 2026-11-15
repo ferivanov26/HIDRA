@@ -1,6 +1,8 @@
 """Testes REST reais. Executar com os emuladores Auth e RTDB ativos."""
 import os
 import tempfile
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 from scripts.seed_emulator import seed, PASSWORD
@@ -55,3 +57,15 @@ class EmulatorTests(unittest.TestCase):
         summary, _ = self.client.call(f"devices/sim_hidra_01/sessions/{events[0]['session_id']}/summary")
         self.assertEqual(summary['result'], 'aborted')
         self.assertEqual(len(summary['active_alerts']), 1)
+
+    def test_presentation_script_publishes_current_session(self):
+        root = Path(__file__).resolve().parents[1]
+        subprocess.run([sys.executable, str(root / 'scripts/demo_emulator.py'), '--no-pause'],
+                       cwd=root, check=True, capture_output=True, text=True, timeout=30)
+        status, _ = self.client.call('devices/sim_hidra_01/status')
+        value, _ = self.client.call('devices/sim_hidra_01/sessions/' + status['session_id'])
+        self.assertEqual(status['state'], 'E5')
+        self.assertEqual(status['pending_count'], 0)
+        self.assertEqual(len(value['events']), 10)
+        self.assertEqual(value['summary']['result'], 'completed')
+        self.assertNotIn('active_alerts', value['summary'])

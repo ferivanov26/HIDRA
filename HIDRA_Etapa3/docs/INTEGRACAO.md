@@ -52,6 +52,14 @@ Após `iot_begin`, consulte `iot_recovered_session`. Se `open` for verdadeiro, a
 
 Essa interface recupera a última referência **persistida**. Se o desligamento ocorrer antes da persistência de um evento, não existe garantia de recuperar esse evento ou seu identificador. Essa janela deve ser medida no ESP32 e registrada como limitação.
 
+O programa de demonstração bloqueia novas sessões enquanto a emissão de `activity_aborted/restart` não for aceita na fila. Durante uma sessão fictícia, uma recusa de publicação conserva o evento e sua sequência para nova tentativa; outro comando `n` não abre uma sessão concorrente. Isso é um ensaio do transporte, não a implementação da etapa 2.
+
+## Tratamento das observações físicas
+
+O driver da etapa 1 pode produzir valores negativos próximos da tara mesmo com `massa_valida=true`. O contrato remoto aceita somente massas finitas e não negativas. O orquestrador deve aplicar sua política de tolerância/calibração antes de preencher `has_mass`; pode omitir a medição sem perder a transição. Não encaminhe uma leitura negativa diretamente nem a converta automaticamente em prova de copo vazio.
+
+As faixas locais são números de 1 a 8, enquanto `instruction_id` é um identificador textual estável (por exemplo, `track_01`). O mapeamento pertence à etapa 2. `Hidra::reproduzirFaixa` confirma o envio do comando UART, não o início físico do áudio. O evento `instruction_played` não comprova reprodução nem atendimento ao limite de latência sem validação adicional em bancada.
+
 ## Ensaio isolado do ESP32
 
 O ambiente `esp32-synthetic` permite enviar uma sessão fictícia pela Serial, sem sensores:

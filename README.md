@@ -21,6 +21,8 @@ hardware, orquestração local e comunicação IoT/aplicativo.
 - [IoT, Firebase e aplicativo da etapa 3](documentacao_iot_firebase_mobile.md).
 - [Contrato dos eventos remotos](HIDRA_Etapa3/docs/CONTRATO.md).
 - [Interface da etapa 3 com o orquestrador](HIDRA_Etapa3/docs/INTEGRACAO.md).
+- [Configuração do Firebase no plano gratuito Spark](HIDRA_Etapa3/docs/FIREBASE_SPARK.md).
+- [Validação da etapa 3](HIDRA_Etapa3/docs/VALIDACAO.md).
 
 Os eventos físicos da etapa 1 e os eventos de atividade publicados pela etapa 3
 são interfaces diferentes. A etapa 2 interpreta as observações de hardware,

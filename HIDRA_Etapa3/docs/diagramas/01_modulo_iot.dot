@@ -1,0 +1,21 @@
+digraph IoT {
+ graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.35", ranksep="0.40", dpi=180];
+ node [shape=box, style="rounded,filled", fillcolor="#f1f5f9", color="#475569", fontname="DejaVu Sans", fontsize=12, margin="0.18,0.12"];
+ edge [color="#475569", fontname="DejaVu Sans", fontsize=10];
+ source [label="Orquestrador local — etapa 2\nEventos interpretados + snapshot",style="rounded,dashed",fillcolor="white"];
+ api [label="iot_publish(event)\nValida e copia; retorna sem rede nem Flash"];
+ ram [label="Fila FreeRTOS\n32 eventos em RAM"];
+ journal [label="Tarefa hidra_iot\nDiário LittleFS: até 200 eventos\nTamanho + CRC32 + ordem persistente"];
+ auth [label="Wi-Fi + UTC válido + autenticação\nHTTPS com certificado verificado"];
+ event [label="1. Confirmar evento\nGET com ETag → PUT condicional\nReenvio compara payload"];
+ summary [label="2. Confirmar resumo\nSnapshot cumulativo; sem duplicar contagens"];
+ remove [label="3. Remover pendência local"];
+ status [label="iot_set_snapshot(snapshot)\nPresença a cada 30 s\nIndependente do reenvio do histórico"];
+ fail [label="Falha transitória\nRepetir após 2–60 s + variação",fillcolor="#fff7ed"];
+ source -> api [label="integração ainda pendente",style=dashed];
+ api -> ram [label="true = aceito em memória"];
+ ram -> journal [label="janela de possível perda antes da Flash"];
+ journal -> auth -> event -> summary -> remove;
+ event -> fail; summary -> fail; fail -> auth [constraint=false];
+ source -> status [style=dashed]; status -> auth [style=dashed,label="fluxo independente"];
+}

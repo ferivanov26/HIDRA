@@ -31,6 +31,12 @@ class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val demo = BuildConfig.FLAVOR == "demo"
+        if(BuildConfig.FLAVOR == "cloud" && (BuildConfig.FIREBASE_API_KEY.isBlank() || BuildConfig.FIREBASE_PROJECT_ID == "demo-hidra")) {
+            setContent { MaterialTheme { Surface(Modifier.fillMaxSize()) {
+                Text("Aplicativo ainda não configurado. Solicite uma versão configurada ao responsável técnico.", Modifier.safeDrawingPadding().padding(24.dp))
+            } } }
+            return
+        }
         val auth: AuthRepository
         val repo: HidraRepository
         if(demo) {
@@ -64,7 +70,7 @@ class MainActivity: ComponentActivity() {
                 val state by vm.state.collectAsStateWithLifecycle()
                 val cm = getSystemService(ConnectivityManager::class.java)
                 val caps = cm.getNetworkCapabilities(cm.activeNetwork)
-                val online = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+                val online = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
                 HidraApp(state, vm, demo, online)
             }
         }

@@ -23,6 +23,8 @@ o ESP32, o computador e o Android.
 - Node.js 22 e JDK 21: Firebase CLI 15.34.2 e emuladores.
 - JDK 17, SDK Android 35 e Build Tools 34.0.0: aplicativo Android, API mínima 26.
 - PlatformIO 6.2.0: plataforma Espressif32 6.10.0 e ArduinoJson 7.3.0.
+- G++ com C++17: cinco testes do programa de demonstração no computador.
+- Graphviz: regeneração opcional dos diagramas técnicos.
 
 Os scripts aceitam `HIDRA_FIREBASE_JAVA_HOME` e `HIDRA_ANDROID_JAVA_HOME` para
 selecionar os JDKs. Comandos diretos de npm/Gradle usam `JAVA_HOME` e `PATH`.
@@ -33,6 +35,16 @@ Configure o SDK em `ANDROID_HOME` ou em `android/local.properties`.
 ```bash
 cd HIDRA_Etapa3
 ```
+
+Nesta máquina, as ferramentas utilizadas na revisão estão instaladas em
+`.runtime/tools/`. Para selecioná-las em um novo terminal:
+
+```bash
+source scripts/activate_local_tools.sh
+```
+
+Em outro computador, instale as dependências acima. O script somente seleciona
+ferramentas locais existentes; não instala o SDK nem aceita licenças.
 
 ## Simulador sem hardware
 
@@ -70,6 +82,10 @@ export HIDRA_DEVICE_EMAIL=device@hidra.test
 export HIDRA_DEVICE_PASSWORD=hidra-demo-123
 python3 -m simulator --scenario alert --publish
 ```
+
+Para uma apresentação com pausa no alerta ativo, execute
+`python3 scripts/demo_emulator.py --scenario alert` após o provisionamento.
+Pressione Enter no terminal para resolver o alerta e concluir a sessão.
 
 O provisionamento é exclusivo do emulador e regrava a área fictícia. Execute-o
 antes da sessão de teste. A conta de consulta é `caregiver@hidra.test`, com a
@@ -129,6 +145,7 @@ remotos. Conclusão observável e estimativa de volume não confirmam ingestão.
 ```bash
 pio run -d firmware -e esp32dev
 pio run -d firmware -e esp32-synthetic
+pio run -d firmware -e esp32-network-probe
 ```
 
 Copie `firmware/iot/include/secrets.example.h` para `secrets.h` e preencha a
@@ -139,6 +156,22 @@ O LittleFS precisa estar preparado; a montagem não formata automaticamente
 registros existentes. O ambiente `esp32-synthetic` gera uma sessão fictícia
 quando recebe `n` na Serial, em 115200 baud. O firmware utiliza HTTPS para a
 nuvem; o fluxo com Firebase Emulator é executado pelo simulador Python.
+
+Na demonstração, `s` apresenta conexão, autenticação, pendências e perdas.
+Uma falha de inicialização ou recuperação impede abrir novas sessões. Se a
+fila recusar um evento, o gerador conserva sessão e sequência e tenta novamente.
+O snapshot é atualizado a cada evento aceito. O diagnóstico `esp32-network-probe`
+verifica Wi-Fi, UTC, TLS e montagem do LittleFS sem publicar eventos.
+
+A integração física com o Firebase foi validada em 15/11/2026: duas sessões
+fictícias de sete eventos, incluindo reconexão após reinício, foram confirmadas
+na nuvem e lidas com a conta do cuidador. A placa de bancada permanece com
+`esp32-synthetic`; `hidra_01` está identificado como `simulator`. Não execute
+novamente a preparação do LittleFS para repetir esse ensaio.
+
+A configuração na nuvem, as contas, os vínculos e a preparação inicial do
+LittleFS estão em [FIREBASE_SPARK.md](docs/FIREBASE_SPARK.md). O projeto pode
+usar somente o plano gratuito Spark, sem vincular faturamento.
 
 A [interface com o orquestrador](docs/INTEGRACAO.md) descreve inicialização,
 publicação, snapshots e recuperação. A etapa 1 usa outro core ESP32; as duas
@@ -152,7 +185,8 @@ Com JDK 21, dependências npm instaladas e portas dos emuladores livres:
 bash scripts/test_all.sh
 ```
 
-O script executa 14 testes Python, sete testes de regras e três testes REST.
+O script executa 14 testes Python do simulador, cinco testes do programa C++
+de demonstração, sete testes de regras e quatro testes REST.
 Os testes REST preparam os dados locais novamente. Não execute outra
 instância dos emuladores ou uma coleta de dados nessas portas ao mesmo tempo.
 
@@ -174,3 +208,7 @@ python3 scripts/generate_rules.py
 Após alterar o contrato ou as regras, execute as suítes correspondentes.
 O [contrato de eventos](docs/CONTRATO.md) documenta os campos, os caminhos do
 banco e o protocolo de sincronização.
+
+Os [resultados da validação](docs/VALIDACAO.md) distinguem testes locais,
+emuladores e diagnóstico físico. Os diagramas técnicos em `docs/diagramas/`
+podem ser regenerados com `python3 scripts/render_diagrams.py`.

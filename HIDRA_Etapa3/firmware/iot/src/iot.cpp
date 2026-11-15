@@ -328,7 +328,7 @@ void worker(void*) {
 void iot_begin(const IotConfig& config) {
     if(ready) return;
     cfg=config;
-    if(!key(cfg.device_id) || !cfg.ssid || !strlen(cfg.ssid) || !cfg.api_key || !strlen(cfg.api_key) || !cfg.device_email || !strlen(cfg.device_email) || !cfg.device_password || !strlen(cfg.device_password) || !String(cfg.database_url).startsWith("https://") || !cfg.root_ca || !strlen(cfg.root_ca)) { error(-4); return; }
+    if(!key(cfg.device_id) || !cfg.ssid || !strlen(cfg.ssid) || !cfg.wifi_password || !cfg.database_url || !cfg.api_key || !strlen(cfg.api_key) || !cfg.device_email || !strlen(cfg.device_email) || !cfg.device_password || !strlen(cfg.device_password) || !String(cfg.database_url).startsWith("https://") || !cfg.root_ca || !strlen(cfg.root_ca)) { error(-4); return; }
     // Não formatar automaticamente: isso apagaria o diário após falha de montagem.
     if(!LittleFS.begin(false)) { error(-5); return; }
     snprintf(boot,sizeof(boot),"%08x%08x",esp_random(),esp_random());

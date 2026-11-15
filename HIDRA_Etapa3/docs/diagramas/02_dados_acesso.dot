@@ -1,0 +1,14 @@
+digraph Database {
+ graph [rankdir=TB,bgcolor="white",pad="0.25",nodesep="0.3",ranksep="0.45",dpi=180];
+ node [shape=box,style="rounded,filled",fillcolor="#f1f5f9",color="#475569",fontname="DejaVu Sans",fontsize=12,margin="0.18,0.12"];
+ edge [color="#475569",fontname="DejaVu Sans",fontsize=10];
+ admin [label="Responsável técnico — Console Firebase\nCria contas, vínculos e metadados"];
+ auth [label="Firebase Authentication\nUma conta por publicador + conta do cuidador\nAutenticação por e-mail/senha"];
+ links [label="Regras de autorização\ndeviceOwners/{device_id} = UID do publicador\ncaregiverDevices/{uid}/{device_id} = true"];
+ device [label="Publicador: ESP32 ou simulador\nEscrita somente no próprio dispositivo"];
+ data [label="Realtime Database: devices/{device_id}\n\nmetadata → label, schema_version, source\nstatus → estado, presença e pendências\nsessions/{session_id}/summary → resultado e contagens\nsessions/{session_id}/events/{event_id}\n→ payload + received_at_ms",fillcolor="#e0edf5"];
+ immutable [label="Eventos imutáveis\nClientes não editam nem excluem\nResumos não retrocedem a sequência"];
+ caregiver [label="Aplicativo do cuidador\nConsulta somente os dispositivos vinculados\nSem escrita em eventos, resumos ou vínculos"];
+ admin -> auth -> links -> device -> data -> caregiver;
+ data -> immutable [style=dashed,label="validação pelas regras"];
+}

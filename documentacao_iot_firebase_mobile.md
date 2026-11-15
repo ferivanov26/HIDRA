@@ -78,3 +78,5 @@ unificado nesta branch. A interface local do hardware permanece em
 - [Preparação, execução, compilação e testes](HIDRA_Etapa3/README.md).
 - [Esquema dos eventos e caminhos do banco](HIDRA_Etapa3/docs/CONTRATO.md).
 - [Interface C++ e responsabilidades de integração](HIDRA_Etapa3/docs/INTEGRACAO.md).
+- [Configuração gratuita no Firebase Spark](HIDRA_Etapa3/docs/FIREBASE_SPARK.md).
+- [Resultados e limites da validação](HIDRA_Etapa3/docs/VALIDACAO.md).
