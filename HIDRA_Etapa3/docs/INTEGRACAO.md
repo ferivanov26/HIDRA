@@ -1,5 +1,7 @@
 # Integração das etapas 1, 2 e 3
 
+Roteiro de entrega para outro computador: [Gravação e testes na bancada](ENTREGA_BANCADA.md).
+
 ## Firmware único
 
 O ambiente `esp32-integrated` executa o sketch real `HIDRA_Etapa2/HIDRA_Etapa2.ino`, sua camada de hardware e o transporte Firebase. A biblioteca local é referenciada por `symlink://../../HIDRA_Etapa2`; não há cópia do orquestrador na etapa 3. O Arduino IDE continua disponível para o ensaio local da etapa 2 com stub serial.
