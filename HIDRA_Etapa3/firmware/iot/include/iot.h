@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 
+namespace HidraIoT {
+
 enum class EventType : uint8_t { Started, StateChanged, InstructionPlayed, CaregiverAlert, AlertResolved, Completed, Aborted };
 enum class ActivityState : uint8_t { E0, E1, E2, E3, E4, E5 };
 struct EventData {
@@ -10,6 +12,8 @@ struct EventData {
     char alert_id[64] = "";
     char reason[64] = "";
     uint32_t attempt = 0;
+    bool has_session_order = false;
+    uint32_t session_order = 0;
     bool has_mass = false;
     float mass_g = 0;
     bool has_estimated_intake = false;
@@ -32,6 +36,7 @@ struct IotConfig {
     const char* device_email;
     const char* device_password;
     const char* root_ca; // PEM da CA que valida os endpoints; nunca usar setInsecure.
+    const char* boot_id = nullptr; // Identidade compartilhada; nulo no ensaio isolado.
 };
 struct IotStatus {
     bool wifi = false;
@@ -41,6 +46,13 @@ struct IotStatus {
     int last_error = 0;
 };
 struct IotSnapshot {
+    bool has_details = false;
+    bool activity_active = false;
+    uint32_t sequence = 0;
+    uint8_t attempt = 0;
+    uint8_t active_alert_count = 0;
+    bool mass_available = false;
+    float mass_g = 0;
     char session_id[64] = "";
     ActivityState state = ActivityState::E0;
 };
@@ -56,3 +68,6 @@ IotStatus iot_get_status();
 void iot_set_snapshot(const IotSnapshot& snapshot);
 RecoveredSession iot_recovered_session();
 const char* iot_boot_id();
+
+uint32_t iot_last_session_order();
+} // namespace HidraIoT

@@ -63,7 +63,8 @@ class FirebaseHidraRepository(private val db: FirebaseDatabase, private val auth
     }
     override fun status(device: String) = device(device).child("status").observe { s ->
         if (!s.exists()) null else DeviceStatus(s.text("state") ?: "E0", s.text("session_id"),
-            s.number("observed_at_ms"), s.number("last_seen_ms"), s.number("pending_count") ?: 0, s.number("dropped_count") ?: 0)
+            s.number("observed_at_ms"), s.number("last_seen_ms"), s.number("pending_count") ?: 0, s.number("dropped_count") ?: 0,
+            s.child("activity_active").value as? Boolean)
     }
     override fun summary(device: String, session: String) = device(device).child("sessions").child(session).child("summary")
         .observe { it.summary()?.copy(id = session) }

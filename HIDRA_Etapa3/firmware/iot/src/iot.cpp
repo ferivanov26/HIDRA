@@ -11,6 +11,7 @@
 #include <vector>
 #include <algorithm>
 
+namespace HidraIoT {
 namespace {
 constexpr size_t MAX_EVENT = 1024, CAPACITY = 200;
 const char* TYPES[] = {"activity_started", "state_changed", "instruction_played", "caregiver_alert", "alert_resolved", "activity_completed", "activity_aborted"};
@@ -55,6 +56,7 @@ bool valid(const HidraEvent& e) {
     if(d.has_mass && (!std::isfinite(d.mass_g) || d.mass_g<0)) return false;
     if(d.has_estimated_intake && (!std::isfinite(d.estimated_intake_ml) || d.estimated_intake_ml<0)) return false;
     // Recusar campos incompatíveis, em vez de descartá-los na serialização.
+    if(d.has_session_order && (e.type!=EventType::Started || d.session_order==0)) return false;
     if(d.has_mass && e.type!=EventType::StateChanged) return false;
     if(d.has_estimated_intake && e.type!=EventType::Completed) return false;
     if(d.previous_state[0] && e.type!=EventType::StateChanged) return false;
@@ -109,7 +111,10 @@ void serialize(const Queued& q, JsonDocument& doc) {
     if(q.occurred>=0) doc["occurred_at_ms"]=q.occurred;
     doc["type"]=TYPES[static_cast<int>(e.type)]; doc["state"]=stateName(e.state);
     switch(e.type) {
-        case EventType::Started: doc["data"]["trigger"]=d.trigger; break;
+        case EventType::Started:
+            doc["data"]["trigger"]=d.trigger;
+            if(d.has_session_order) doc["data"]["session_order"]=d.session_order;
+            break;
         case EventType::StateChanged:
             doc["data"]["previous_state"]=d.previous_state;
             if(d.has_mass) doc["data"]["mass_g"]=d.mass_g;
@@ -138,6 +143,11 @@ int http(const String& url, const char* method, const String& body, String& resp
     if(etag) client.addHeader("X-Firebase-ETag","true");
     if(match.length()) client.addHeader("if-match",match);
     int code=client.sendRequest(method,body);
+    if(code<0) {
+        char detail[128]{};
+        const int tlsCode=tls.lastError(detail,sizeof(detail));
+        Serial.printf("IoT HTTPS: http=%d tls=%d (%s), heap=%u\n",code,tlsCode,detail,ESP.getFreeHeap());
+    }
     if(code>0) { response=client.getString(); if(etag) *etag=client.header("ETag"); }
     client.end();
     if(code==401) expiresAt=0;
@@ -189,10 +199,11 @@ bool summaryFor(const JsonDocument& event, JsonDocument& summary) {
     if(!exists) {
         JsonDocument meta;
         if(!readRecord("/meta.bin",meta)) { error(-12); return false; }
-        uint32_t order=(meta["session_order"] | 0)+1;
-        meta["session_order"]=order;
+        uint32_t order=event["data"]["session_order"] | 0;
+        if(!order) order=(meta["session_order"] | 0)+1;
+        meta["session_order"]=std::max<uint32_t>(meta["session_order"] | 0,order);
         if(!writeRecord("/meta.bin",meta)) return false;
-        sessionOrder=order;
+        portENTER_CRITICAL(&mux); sessionOrder=meta["session_order"].as<uint32_t>(); portEXIT_CRITICAL(&mux);
         summary["session_order"]=order; summary["result"]="in_progress";
         summary["instruction_count"]=0; summary["alert_count"]=0;
         summary["history_incomplete"]=incomplete;
@@ -250,6 +261,13 @@ void presence() {
     doc["boot_id"]=boot; doc["state"]=stateName(current.state);
     if(current.session_id[0]) doc["session_id"]=current.session_id;
     if(observed>=0) doc["observed_at_ms"]=observed;
+    if(current.has_details) {
+        doc["activity_active"]=current.activity_active;
+        doc["sequence"]=current.sequence; doc["attempt"]=current.attempt;
+        doc["active_alert_count"]=current.active_alert_count;
+        doc["mass_available"]=current.mass_available;
+        if(current.mass_available && std::isfinite(current.mass_g)) doc["mass_g"]=current.mass_g;
+    }
     doc["last_seen_ms"][".sv"]="timestamp";
     doc["pending_count"]=st.pending_count; doc["dropped_count"]=st.dropped_count;
     String response; int code=database("status","PUT",&doc,response);
@@ -275,6 +293,9 @@ void worker(void*) {
             JsonDocument metadata;
             if(!readRecord("/meta.bin",metadata)) { loss(); error(-12); continue; }
             metadata["journal_order"]=++journalOrder;
+            const uint32_t producerOrder=event["data"]["session_order"] | 0;
+            metadata["session_order"]=std::max<uint32_t>(metadata["session_order"] | 0,producerOrder);
+            portENTER_CRITICAL(&mux); sessionOrder=metadata["session_order"].as<uint32_t>(); portEXIT_CRITICAL(&mux);
             if(!writeRecord("/meta.bin",metadata)) { loss(); error(-12); continue; }
             char number[12]; snprintf(number,sizeof(number),"%010u",journalOrder);
             String path="/q_"+String(number)+".bin";
@@ -331,7 +352,10 @@ void iot_begin(const IotConfig& config) {
     if(!key(cfg.device_id) || !cfg.ssid || !strlen(cfg.ssid) || !cfg.wifi_password || !cfg.database_url || !cfg.api_key || !strlen(cfg.api_key) || !cfg.device_email || !strlen(cfg.device_email) || !cfg.device_password || !strlen(cfg.device_password) || !String(cfg.database_url).startsWith("https://") || !cfg.root_ca || !strlen(cfg.root_ca)) { error(-4); return; }
     // Não formatar automaticamente: isso apagaria o diário após falha de montagem.
     if(!LittleFS.begin(false)) { error(-5); return; }
-    snprintf(boot,sizeof(boot),"%08x%08x",esp_random(),esp_random());
+    if(cfg.boot_id) {
+        if(!key(cfg.boot_id,sizeof(boot))) { error(-4); return; }
+        strlcpy(boot,cfg.boot_id,sizeof(boot));
+    } else snprintf(boot,sizeof(boot),"%08x%08x",esp_random(),esp_random());
     JsonDocument meta;
     if(LittleFS.exists("/meta.bin")) {
         if(!readRecord("/meta.bin",meta)) { error(-12); return; }
@@ -358,7 +382,10 @@ void iot_begin(const IotConfig& config) {
     std::sort(pending.begin(),pending.end(),[](const String& a,const String& b) { return a<b; });
     for(const auto& path: pending) {
         JsonDocument event;
-        if(readRecord(path,event)) recoverReference(event);
+        if(readRecord(path,event)) {
+            recoverReference(event);
+            sessionOrder=std::max<uint32_t>(sessionOrder,event["data"]["session_order"] | 0);
+        }
     }
     queue=xQueueCreate(32,sizeof(Queued));
     if(!queue) { error(-6); return; }
@@ -382,3 +409,6 @@ void iot_set_snapshot(const IotSnapshot& value) {
 }
 RecoveredSession iot_recovered_session() { return recovered; }
 const char* iot_boot_id() { return boot; }
+
+uint32_t iot_last_session_order() { portENTER_CRITICAL(&mux); auto order=sessionOrder; portEXIT_CRITICAL(&mux); return order; }
+} // namespace HidraIoT

@@ -69,3 +69,20 @@ class EmulatorTests(unittest.TestCase):
         self.assertEqual(len(value['events']), 10)
         self.assertEqual(value['summary']['result'], 'completed')
         self.assertNotIn('active_alerts', value['summary'])
+
+    def test_stage2_events_are_accepted_by_real_rules(self):
+        from tests.test_orchestrator_bridge import compile_bridge, bridge_events
+        binary = Path(self.temp.name) / 'bridge'
+        compile_bridge(binary)
+        events = bridge_events(binary, 'alert')
+        for event in events:
+            self.journal.append(event)
+        while sync_one(self.journal, self.client):
+            pass
+        path = 'devices/sim_hidra_01/sessions/' + events[0]['session_id']
+        value, _ = self.client_for('caregiver').call(path)
+        self.assertEqual(len(value['events']), len(events))
+        self.assertEqual(value['summary']['session_order'], 38)
+        self.assertEqual(value['summary']['estimated_intake_ml'], 150)
+        self.assertEqual(value['summary']['result'], 'completed')
+        self.assertNotIn('active_alerts', value['summary'])

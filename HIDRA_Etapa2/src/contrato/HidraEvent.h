@@ -98,6 +98,6 @@ size_t hidra_event_to_json(const HidraEvent& ev, const char* device_id,
 // ---- Identidade da inicializacao (boot_id) ----------------------------------
 // boot_id e compartilhado pelo orquestrador (para formar session_id) e pelo
 // modulo IoT (para formar event_id). Gerado a partir de um contador de boots
-// persistente => nao se repete entre reinicializacoes (ate 65536 boots).
+// persistente => nao se repete entre reinicializacoes (contador completo de 32 bits).
 void        hidra_set_boot_counter(uint32_t boot_counter);
 const char* hidra_boot_id();

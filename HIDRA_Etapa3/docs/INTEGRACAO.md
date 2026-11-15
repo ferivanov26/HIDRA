@@ -1,74 +1,73 @@
-# Integração da etapa 3
+# Integração das etapas 1, 2 e 3
 
-## Responsabilidades
+## Firmware único
 
-O módulo `HIDRA_Etapa1/HidraHardware.h`, na raiz do repositório, disponibiliza `Hidra::LeituraHardware` e `Hidra::EventoFisico`. A massa em gramas só deve ser usada quando `massa_valida` for verdadeira; os instantes físicos são monotônicos desde o boot. A etapa 2 recebe essas observações e produz os eventos de atividade. A etapa 2 reconhece transições, executa áudio/sinalização e publica **acontecimentos processados**. A etapa 3 não estima ingestão a partir dos sensores e não determina a próxima instrução.
+O ambiente `esp32-integrated` executa o sketch real `HIDRA_Etapa2/HIDRA_Etapa2.ino`, sua camada de hardware e o transporte Firebase. A biblioteca local é referenciada por `symlink://../../HIDRA_Etapa2`; não há cópia do orquestrador na etapa 3. O Arduino IDE continua disponível para o ensaio local da etapa 2 com stub serial.
 
-O código concentra os componentes internos do módulo em `firmware/iot/src/iot.cpp`, com funções separadas para fila, persistência, autenticação, cliente REST e sincronização. A interface pública está em `iot.h`.
+A compilação integrada fixa Arduino ESP32 2.0.17, Espressif32 6.10.0, C++17 e HX711 0.7.5. A compilação Arduino IDE com core 3.3.x é um ambiente separado. O código do hardware foi compilado no ambiente integrado; isso não substitui sua calibração na montagem física.
 
-## Ambientes de compilação
-
-A etapa 1 usa Arduino IDE com core ESP32 3.3.12 ou compatível. A etapa 3 foi compilada separadamente com Arduino ESP32 2.0.17, fixado pela plataforma Espressif32 6.10.0 do PlatformIO. Os projetos permanecem independentes nesta branch; a migração não combina os dois programas nem comprova compatibilidade entre os cores. Um firmware único deve definir um único core, um único `setup` e um único `loop`.
-
-O callback físico da etapa 1 não deve chamar rede ou persistência. A etapa 2 faz a conversão de observações físicas em `HidraEvent` e alimenta `iot_publish` e `iot_set_snapshot`.
-
-## API
-
-```cpp
-void iot_begin(const IotConfig& config);
-bool iot_publish(const HidraEvent& event);
-IotStatus iot_get_status();
-void iot_set_snapshot(const IotSnapshot& snapshot);
-RecoveredSession iot_recovered_session();
-const char* iot_boot_id();
-```
-
-`iot_begin` deve ser chamado uma única vez antes de iniciar as tarefas produtoras. Ponteiros da configuração precisam continuar válidos durante toda a execução (use strings estáticas). A inicialização monta o LittleFS e recupera arquivos existentes. A tarefa FreeRTOS de comunicação é criada com prioridade 1 e stack de 16 KiB.
-
-`iot_publish` valida, copia uma estrutura de tamanho fixo e retorna sem rede nem Flash. `true` significa apenas aceitação na fila de 32 posições. A tarefa de comunicação transfere registros a um diário de até 200 eventos, protegidos por tamanho e CRC32. Registros ainda em RAM podem ser perdidos em queda de energia. Não trate `true` como confirmação de armazenamento remoto.
-
-O produtor não deve reutilizar `sequence` para acontecimentos diferentes nem manter referências a dados externos. Um retorno `false` exige registrar diagnóstico local; não bloqueie áudio esperando rede. O contador de perdas inclui saturação da fila e falhas de persistência, quando observáveis; a perda de RAM em desligamento abrupto não é quantificável com garantia.
-
-Exemplo de transição já reconhecida pela etapa 2:
-
-```cpp
-HidraEvent event;
-strlcpy(event.session_id, sessionId, sizeof(event.session_id));
-event.sequence = nextSequence;
-event.type = EventType::StateChanged;
-event.state = ActivityState::E3;
-strlcpy(event.data.previous_state, "E2", sizeof(event.data.previous_state));
-event.data.has_mass = true;
-event.data.mass_g = 185.0f;
-bool accepted = iot_publish(event);
-// Tratar accepted=false sem bloquear o controle local.
-```
-
-Ao mudar o estado atual, a etapa 2 também chama `iot_set_snapshot`, que copia sessão/estado e captura o horário da observação. O status é publicado a cada 30 s quando a rede e a autenticação permitem. O aplicativo indica ausência de presença recebida após 90 s.
-
-## Sessão aberta após reinicialização
-
-Após `iot_begin`, consulte `iot_recovered_session`. Se `open` for verdadeiro, a etapa 2 deve produzir `activity_aborted`, com a sessão recuperada, sequência `last_sequence + 1`, estado recuperado e motivo `restart`, antes de abrir uma nova sessão. Depois, crie `session_id` com `iot_boot_id()` e contador local. Não retome automaticamente as ações do paciente.
-
-Essa interface recupera a última referência **persistida**. Se o desligamento ocorrer antes da persistência de um evento, não existe garantia de recuperar esse evento ou seu identificador. Essa janela deve ser medida no ESP32 e registrada como limitação.
-
-O programa de demonstração bloqueia novas sessões enquanto a emissão de `activity_aborted/restart` não for aceita na fila. Durante uma sessão fictícia, uma recusa de publicação conserva o evento e sua sequência para nova tentativa; outro comando `n` não abre uma sessão concorrente. Isso é um ensaio do transporte, não a implementação da etapa 2.
-
-## Tratamento das observações físicas
-
-O driver da etapa 1 pode produzir valores negativos próximos da tara mesmo com `massa_valida=true`. O contrato remoto aceita somente massas finitas e não negativas. O orquestrador deve aplicar sua política de tolerância/calibração antes de preencher `has_mass`; pode omitir a medição sem perder a transição. Não encaminhe uma leitura negativa diretamente nem a converta automaticamente em prova de copo vazio.
-
-As faixas locais são números de 1 a 8, enquanto `instruction_id` é um identificador textual estável (por exemplo, `track_01`). O mapeamento pertence à etapa 2. `Hidra::reproduzirFaixa` confirma o envio do comando UART, não o início físico do áudio. O evento `instruction_played` não comprova reprodução nem atendimento ao limite de latência sem validação adicional em bancada.
-
-## Ensaio isolado do ESP32
-
-O ambiente `esp32-synthetic` permite enviar uma sessão fictícia pela Serial, sem sensores:
+A partir de `HIDRA_Etapa3/`:
 
 ```bash
-pio run -d firmware -e esp32-synthetic
-# Depois de configurar secrets.h e preparar a placa:
-pio run -d firmware -e esp32-synthetic -t upload
-pio device monitor -p /dev/ttyUSB0 -b 115200
+source scripts/activate_local_tools.sh  # opcional: ferramentas locais desta máquina
+pio run -d firmware -e esp32-integrated
+pio run -d firmware -e esp32-integrated -t upload --upload-port /dev/ttyACM0
+pio device monitor -p /dev/ttyACM0 -b 115200
 ```
 
-Execute os comandos a partir de `HIDRA_Etapa3/` e ajuste a porta Serial conforme `pio device list`. Envie `n` na Serial. Use uma identidade separada da identidade final do equipamento e marque administrativamente `metadata/source` como `simulator`. O ensaio publica apenas acontecimentos fictícios; não mede reconhecimento nem latência de áudio. Não use esse ambiente como firmware final da etapa 2.
+Configure antes `firmware/iot/include/secrets.h`, conforme o exemplo. A partição é `default.csv`, equivalente a **Default 4MB with spiffs**, usando LittleFS. A montagem integrada não formata automaticamente. Não execute `uploadfs` sobre um diário existente. O preparo inicial está em [FIREBASE_SPARK.md](FIREBASE_SPARK.md).
+
+## Interface e responsabilidades
+
+O contrato canônico do produtor está em `HIDRA_Etapa2/src/contrato/HidraEvent.h` e `src/iot/HidraIot.h`. `firmware/iot/src/orchestrator_adapter.cpp` converte os sete tipos de evento, enums, indicadores de presença e textos para o transporte em `namespace HidraIoT`. A separação evita colisões entre estruturas homônimas e mantém a interface da etapa 2.
+
+```cpp
+void iot_begin(const IotConfig&);
+bool iot_publish(const HidraEvent&);
+void iot_update_status(const HidraStatusSnapshot&);
+IotStatus iot_get_status();
+uint32_t iot_last_session_order();
+IotRecoveredSession iot_recovered_session();
+```
+
+- **Aquisição:** o callback físico apenas copia observações; o loop as entrega ao detector e ao orquestrador.
+- **Orquestração:** decide E0–E5, áudio, alertas, sequência e encerramento. Não depende da nuvem para continuar a atividade.
+- **Transporte:** valida/copia para uma fila FreeRTOS de 32 posições. Uma tarefa separada mantém até 200 eventos pendentes em LittleFS, com tamanho, CRC32 e ordem persistente, autentica e publica via HTTPS.
+
+`iot_publish=true` significa aceitação em RAM. Não confirma Flash nem Firebase. A etapa 2 contabiliza recusas sem bloquear áudio; não oferece garantia de entrega quando a fila ou o diário saturam. Registros ainda em RAM podem ser perdidos em desligamento abrupto. Configuração e ponteiros devem permanecer válidos durante toda a execução.
+
+## Identidade, ordem e snapshot
+
+O adapter recebe `hidra_boot_id()` da etapa 2 na inicialização do transporte. Sessão e eventos usam o mesmo identificador de boot. O contador NVS é usado integralmente, sem truncamento em 16 bits.
+
+O `activity_started` inclui `data.session_order`, inteiro positivo vindo da NVS. O transporte usa esse valor no resumo e conserva o maior contador persistido. Antes de uma nova atividade, o sketch eleva o contador NVS ao piso recuperado do diário; isso permite migrar do firmware de ensaio sem repetir os ordinais já utilizados. Um publicador legado sem esse campo conserva a geração local de ordem. Um dispositivo deve ter somente um publicador ativo.
+
+`iot_update_status` copia o snapshot sob seção crítica. Além de sessão/estado, a presença inclui `activity_active`, `sequence`, `attempt`, `active_alert_count`, `mass_available` e, quando disponível e finita, `mass_g`. É enviada a cada 30 s quando há comunicação. O Android mostra ocioso com `activity_active=false`; após 90 s sem presença recebida, indica comunicação desatualizada. Massa negativa no status é diagnóstico de tara; nos eventos de atividade, massa e volume precisam ser não negativos.
+
+## Reinicialização
+
+NVS retém a referência da sessão ativa; o diário IoT fornece sua última referência persistida. O sketch reconcilia a sequência da mesma sessão e chama a recuperação do orquestrador antes de aceitar atividades. A etapa 2 resolve os alertas conhecidos e emite `activity_aborted/restart` com sequência continuada e o boot atual. A atividade do paciente não é retomada automaticamente.
+
+Há uma janela entre aceitação em RAM e persistência. A recuperação não restaura eventos que nunca chegaram à Flash. Uma recusa da fila continua sendo contabilizada; ensaios de saturação e corte de energia são necessários para quantificar esses limites.
+
+## Operação de bancada
+
+Use final de linha **Nova linha**, 115200 baud. `s` mostra hardware, estado, boot e `wifi/auth/pendentes/perdidos/recusados/erro`. `iniciar` abre a atividade; `cancelar` a interrompe. `demo` aplica tempos de demonstração; `padrao` restaura os tempos normais. Esses comandos operam o orquestrador real, sem gerar leituras físicas artificiais.
+
+Ligue com plataforma vazia para a tara e copo na base. Ajuste os limiares com o copo real e registre sua massa com `copo`. Confirme a polaridade da microchave; use `set chave 0` se necessário. O fio **TX do MP3 → GPIO25 pode ficar desligado**: o orquestrador não usa esse retorno, evitando aplicar seus 5 V à entrada da ESP32.
+
+A microchave indica presença na base e não mede massa. `estimated_intake_ml` só aparece quando o copo retorna à plataforma de pesagem. A conclusão pela base não inventa volume. A faixa atual `return_cup` permanece; um áudio específico “devolva o copo na balança” exige criar o MP3 e ampliar o limite de faixas no hardware/console. Nenhuma faixa 9 foi presumida ou adicionada.
+
+`instruction_played` registra o comando de instrução emitido. Não comprova início físico do áudio. O filtro de massa leva aproximadamente 2 s; o atraso até a decisão e o atraso UART→som devem ser medidos separadamente para RNF_LATENCIA.
+
+## Reprodução dos testes
+
+Na raiz do repositório: `CCACHE_DISABLE=1 bash tests/run_tests.sh`. Na pasta da etapa 3:
+
+```bash
+python3 -m unittest tests.test_orchestrator_bridge -v
+bash scripts/test_all.sh
+bash scripts/build_android.sh :app:testDemoDebugUnitTest :app:lintDemoDebug
+```
+
+A ponte nativa executa o orquestrador real com entradas físicas controladas e transporte substituído: ciclo pela balança, alerta/resolução, reinício e conclusão pela base sem volume. O teste REST encaminha esses eventos reais aos emuladores Auth/RTDB e consulta o resultado como cuidador. Eles não medem sensores, áudio nem perda em corte de energia. Os resultados físicos estão em [VALIDACAO.md](VALIDACAO.md).

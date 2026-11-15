@@ -31,5 +31,10 @@ Os eventos físicos da etapa 1 e os eventos de atividade publicados pela etapa 3
 são interfaces diferentes. A etapa 2 interpreta as observações de hardware,
 mantém os estados da atividade e entrega os eventos processados ao módulo IoT.
 
-O firmware de hardware e o de comunicação são projetos separados; cada um
-possui seu próprio programa de diagnóstico e configuração de compilação.
+O ambiente `esp32-integrated` compila hardware, orquestrador e transporte Firebase em um único firmware, reutilizando o código da etapa 2:
+
+```bash
+pio run -d HIDRA_Etapa3/firmware -e esp32-integrated
+```
+
+Configuração, gravação e operação estão em [INTEGRACAO.md](HIDRA_Etapa3/docs/INTEGRACAO.md). Os ambientes de diagnóstico e a compilação Arduino IDE com stub permanecem disponíveis.

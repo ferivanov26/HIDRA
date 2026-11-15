@@ -122,7 +122,7 @@ private fun date(ms: Long?): String = ms?.let {
                     if(status == null && !s.loading) Text("Nenhum estado publicado pelo dispositivo.")
                     status?.let {
                         val stale = it.lastSeenMs == null || s.now - it.lastSeenMs > 90000
-                        Info(if(stale) "Comunicação do dispositivo desatualizada" else "Último estado observado: ${it.state}",
+                        Info(if(stale) "Comunicação do dispositivo desatualizada" else if(it.activityActive == false) "Sistema ocioso — último estado: ${it.state}" else "Último estado observado: ${it.state}",
                             "Última comunicação: ${date(it.lastSeenMs)}\nObservação: ${date(it.observedAtMs)}\nSessão: ${it.sessionId ?: "nenhuma"}")
                         if(it.pendingCount > 0) Text("${it.pendingCount} evento(s) pendente(s). O histórico pode estar atrasado.")
                         if(it.droppedCount > 0) Text("${it.droppedCount} perda(s) registrada(s). Histórico incompleto.")

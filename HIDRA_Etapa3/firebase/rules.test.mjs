@@ -66,3 +66,27 @@ test('Status só é escrito pelo dispositivo dono', async () => {
   await assertFails(set(ref(db('other'), status), value));
   await assertFails(remove(ref(db('device1'), status)));
 });
+test('Contrato da etapa 2 aceita session_order positivo somente no início', async () => {
+  const valid = event(); valid.payload.data.session_order = 38;
+  await assertSucceeds(set(ref(db('device1'), path), valid));
+  for (const order of [0, -1, 1.5, '38']) {
+    const invalid = event(); invalid.payload.data.session_order = order;
+    invalid.payload.event_id = 'bad_order';
+    await assertFails(set(ref(db('device1'), path.replace('b1_e1', 'bad_order')), invalid));
+  }
+  const invalid = event(); invalid.payload.type = 'state_changed';
+  invalid.payload.data = {previous_state: 'E0', session_order: 38};
+  invalid.payload.event_id = 'bad_type';
+  await assertFails(set(ref(db('device1'), path.replace('b1_e1', 'bad_type')), invalid));
+});
+test('Snapshot do orquestrador preserva estado ocioso e diagnóstico físico', async () => {
+  const status = 'devices/sim_hidra_01/status';
+  const value = {boot_id: '10001', state: 'E5', last_seen_ms: serverTimestamp(),
+    pending_count: 0, dropped_count: 0, activity_active: false, sequence: 9,
+    attempt: 0, active_alert_count: 0, mass_available: true, mass_g: -0.5};
+  await assertSucceeds(set(ref(db('device1'), status), value));
+  await assertFails(set(ref(db('device1'), status), {...value, activity_active: 'false'}));
+  await assertFails(set(ref(db('device1'), status), {...value, sequence: -1}));
+  const extra = event(); extra.activity_active = false;
+  await assertFails(set(ref(db('device1'), path), extra));
+});

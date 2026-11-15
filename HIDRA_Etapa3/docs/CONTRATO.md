@@ -10,7 +10,7 @@ Identificadores e códigos textuais: 1 a 63 caracteres ASCII alfanuméricos, `_`
 
 | Tipo | Estado / dados |
 |---|---|
-| `activity_started` | E0; `trigger`: button ou schedule |
+| `activity_started` | E0; `trigger`: button ou schedule; `session_order` opcional, inteiro positivo da NVS |
 | `state_changed` | `previous_state`; `mass_g` opcional, finita e não negativa |
 | `instruction_played` | `instruction_id`, `attempt` inteiro positivo |
 | `caregiver_alert` | `alert_id`, `reason`, `attempt` inteiro positivo |
@@ -18,7 +18,7 @@ Identificadores e códigos textuais: 1 a 63 caracteres ASCII alfanuméricos, `_`
 | `activity_completed` | E5; `estimated_intake_ml` opcional, finita e não negativa |
 | `activity_aborted` | `reason`: restart ou local_cancel |
 
-`session_id` e `sequence` vêm da etapa 2. `event_id` e horários são acrescentados na entrada do módulo IoT, antes da persistência. Reenvios preservam o evento inteiro. Reiniciar o módulo não transforma uma sessão aberta em concluída.
+`session_id` e `sequence` vêm da etapa 2. No firmware integrado, `boot_id` é compartilhado com `hidra_boot_id()`; o adapter preserva `data.session_order` e o resumo usa esse mesmo ordinal. Publicadores legados sem o campo geram a ordem localmente. `event_id` e horários são acrescentados na entrada do módulo IoT, antes da persistência. Reenvios preservam o evento inteiro. Reiniciar o módulo não transforma uma sessão aberta em concluída.
 
 ## Caminhos e resumos
 
@@ -36,7 +36,7 @@ O resumo contém `session_order`, `result`, `last_sequence`, `last_state`, `inst
 
 `history_incomplete` sinaliza lacunas ou perdas identificadas pelo publicador. O resumo não confirma ingestão. `session_order` cresce por identidade de dispositivo; não apague o diário/metadata do publicador e continue publicando com a mesma identidade sem reprovisionamento.
 
-`status` tem `boot_id`, `state`, `last_seen_ms`, `pending_count` e `dropped_count`. `session_id` é opcional enquanto nenhuma sessão está selecionada. `observed_at_ms` só aparece quando o horário da observação é conhecido. `last_seen_ms` e `received_at_ms` usam timestamp do servidor. O status vem de um snapshot atual separado; drenar histórico antigo não altera a sessão atual.
+`status` tem `boot_id`, `state`, `last_seen_ms`, `pending_count` e `dropped_count`. `session_id` é opcional enquanto nenhuma sessão está selecionada. `observed_at_ms` só aparece quando o horário da observação é conhecido. `last_seen_ms` e `received_at_ms` usam timestamp do servidor. O snapshot integrado acrescenta os campos opcionais `activity_active` (booleano), `sequence`, `attempt`, `active_alert_count` (inteiros não negativos), `mass_available` (booleano) e `mass_g` (número finito, admitindo negativo como diagnóstico de tara). Ausência desses campos mantém compatibilidade com os publicadores anteriores. O status vem de um snapshot atual separado; drenar histórico antigo não altera a sessão atual.
 
 ## Publicação e recuperação
 

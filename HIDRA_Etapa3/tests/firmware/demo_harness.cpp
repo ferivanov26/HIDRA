@@ -1,6 +1,7 @@
 #include "iot.h"
 #include <cassert>
 #include <vector>
+using namespace HidraIoT;
 TestSerial Serial;
 static IotStatus status;
 static RecoveredSession oldSession;
@@ -8,16 +9,16 @@ static std::vector<HidraEvent> accepted;
 static std::vector<IotSnapshot> snapshots;
 static bool rejectRecovery=false;
 static bool rejectTransitions=false;
-void iot_begin(const IotConfig&) {}
-bool iot_publish(const HidraEvent& e) {
+void HidraIoT::iot_begin(const IotConfig&) {}
+bool HidraIoT::iot_publish(const HidraEvent& e) {
     if(rejectRecovery && e.type==EventType::Aborted) return false;
     if(rejectTransitions && e.type==EventType::StateChanged) return false;
     accepted.push_back(e); return true;
 }
-IotStatus iot_get_status() { return status; }
-void iot_set_snapshot(const IotSnapshot& s) { snapshots.push_back(s); }
-RecoveredSession iot_recovered_session() { return oldSession; }
-const char* iot_boot_id() { return "testboot"; }
+IotStatus HidraIoT::iot_get_status() { return status; }
+void HidraIoT::iot_set_snapshot(const IotSnapshot& s) { snapshots.push_back(s); }
+RecoveredSession HidraIoT::iot_recovered_session() { return oldSession; }
+const char* HidraIoT::iot_boot_id() { return "testboot"; }
 void setup();
 void loop();
 void pump() { for(int i=0;i<16;++i) loop(); }

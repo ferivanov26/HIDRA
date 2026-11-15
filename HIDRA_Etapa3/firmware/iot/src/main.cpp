@@ -1,5 +1,5 @@
 #include "iot.h"
-#ifndef HIDRA_NETWORK_PROBE
+#if !defined(HIDRA_NETWORK_PROBE) && !defined(HIDRA_INTEGRATED_ORCHESTRATOR)
 #if __has_include("secrets.h")
 #include "secrets.h"
 #define HIDRA_CONFIGURED 1
@@ -8,6 +8,8 @@
 #define HIDRA_CONFIGURED 1
 #define HIDRA_TEMPLATE_CONFIG 1
 #endif
+
+using namespace HidraIoT;
 
 #ifdef HIDRA_SYNTHETIC_DEMO
 namespace {
@@ -45,7 +47,9 @@ void advanceDemo() {
     if(demoStep==0) strlcpy(e.data.trigger,"button",sizeof(e.data.trigger));
     else if(demoStep<=5) {
         e.type=EventType::StateChanged; e.state=static_cast<ActivityState>(demoStep);
-        snprintf(e.data.previous_state,sizeof(e.data.previous_state),"E%d",demoStep-1);
+        e.data.previous_state[0]='E';
+        e.data.previous_state[1]=static_cast<char>('0'+demoStep-1);
+        e.data.previous_state[2]='\0';
         if(demoStep==3) { e.data.has_mass=true; e.data.mass_g=185; }
     } else {
         e.type=EventType::Completed; e.state=ActivityState::E5;

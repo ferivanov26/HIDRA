@@ -46,5 +46,15 @@ void      iot_begin(const IotConfig& config);
 bool      iot_publish(const HidraEvent& event);
 IotStatus iot_get_status();
 
-// Extensao proposta pela Etapa 2 (combinar com a Etapa 3).
+// Snapshot do orquestrador; publicado pelo adapter da etapa 3.
 void      iot_update_status(const HidraStatusSnapshot& snapshot);
+
+// Contador já reservado no diário IoT e referência recuperada após reinício.
+uint32_t iot_last_session_order();
+struct IotRecoveredSession {
+  char session_id[64];
+  uint32_t last_sequence;
+  ActivityState state;
+  bool open;
+};
+IotRecoveredSession iot_recovered_session();

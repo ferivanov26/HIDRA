@@ -26,7 +26,7 @@ for name, (required, optional) in FIELDS.items():
 data = {'.validate': ' || '.join(variants), '$other': check('false')}
 for field in sorted(set().union(*(a | b for a, b in FIELDS.values()))):
     kinds = [f"{kind} == '{name}'" for name, (a, b) in FIELDS.items() if field in a | b]
-    validation = integer(1) if field == 'attempt' else text
+    validation = integer(1) if field in ('attempt', 'session_order') else text
     if field == 'previous_state':
         validation = state
     if field in ('mass_g', 'estimated_intake_ml'):
@@ -69,6 +69,10 @@ status = {'.write': owner + ' && newData.exists()',
           'boot_id': check(text), 'session_id': check(text), 'state': check(state),
           'last_seen_ms': check('newData.isNumber() && newData.val() == now'),
           'observed_at_ms': check(integer()), 'pending_count': check(integer()), 'dropped_count': check(integer()),
+          'activity_active': check('newData.isBoolean()'),
+          'sequence': check(integer()), 'attempt': check(integer()),
+          'active_alert_count': check(integer()), 'mass_available': check('newData.isBoolean()'),
+          'mass_g': check('newData.isNumber()'),
           '$other': check('false')}
 rules = {'rules': {'.read': False, '.write': False,
          'caregiverDevices': {'$uid': {'.read': 'auth != null && auth.uid == $uid'}},

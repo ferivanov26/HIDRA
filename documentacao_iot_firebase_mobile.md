@@ -70,10 +70,9 @@ precisa de contas técnicas, contas de cuidadores e vínculos autorizados.
 
 ## Compatibilidade e referências internas
 
-A etapa 1 usa Arduino IDE com core ESP32 3.3.12 ou compatível. A etapa 3 mantém
-seu ambiente PlatformIO separado, com Arduino ESP32 2.0.17. Não há um firmware
-unificado nesta branch. A interface local do hardware permanece em
-`HIDRA_Etapa1/HidraHardware.h`.
+O ambiente `esp32-integrated` compila o sketch real da etapa 2 e seu hardware junto ao transporte Firebase, em Arduino ESP32 2.0.17 e C++17. O adapter preserva o contrato canônico da etapa 2 e compartilha `boot_id`, `session_order` e o snapshot de status. A variante Arduino IDE com core 3.3.x usa stub serial; não é o firmware de nuvem.
+
+A conclusão pela microchave não estima volume. A estimativa exige retorno à balança. Calibração, polaridade da microchave, início audível da instrução e latência total precisam de ensaio com a montagem completa.
 
 - [Preparação, execução, compilação e testes](HIDRA_Etapa3/README.md).
 - [Esquema dos eventos e caminhos do banco](HIDRA_Etapa3/docs/CONTRATO.md).

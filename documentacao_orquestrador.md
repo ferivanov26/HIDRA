@@ -16,7 +16,7 @@
 | Orquestrador com tratamento de temporizadores e desvios | `Orquestrador::tick()`, regras R02/R04/R08/R09/R13 | Implementado e testado em simulação |
 | Sistema de reprodução de instruções verbais | `src/plataforma/AtuadoresHidra.*` (`FilaAudio`) | Implementado; usa `Hidra::reproduzirFaixa()` |
 | Sistema de sinalização e alertas locais | `LedHidra`, alertas `caregiver_alert` + áudio `0008` | Implementado |
-| Interface de comunicação com o módulo IoT | `src/contrato/HidraEvent.*`, `src/iot/HidraIot.h` (+ stub) | Implementada conforme o contrato da Etapa 3 |
+| Interface de comunicação com o módulo IoT | `src/contrato/HidraEvent.*`, `src/iot/HidraIot.h` (stub ou adapter real) | Implementada conforme o contrato da Etapa 3 |
 | Documentação das regras de decisão e das transições | este documento | Concluída |
 
 Além dos entregáveis, a etapa implementa requisitos que dependiam do orquestrador: início por horário, configuração pelo cuidador, registro local com data/hora, persistência e recuperação após queda de energia.
@@ -68,7 +68,7 @@ HIDRA_Etapa2/
     ├── hardware/               # Etapa 1 (cópia idêntica, NÃO editar aqui)
     ├── contrato/HidraEvent.*   # HidraEvent, EventData, JSON, boot_id (compartilhado c/ Etapa 3)
     ├── iot/HidraIot.h          # iot_begin / iot_publish / iot_get_status (+ iot_update_status)
-    ├── iot/HidraIotStub.cpp    # stub: imprime o JSON no Serial (substituir pela Etapa 3)
+    ├── iot/HidraIotStub.cpp    # stub: imprime JSON no modo Arduino IDE
     ├── orquestrador/
     │   ├── Parametros.*        # parâmetros do cuidador + validação
     │   ├── Observacoes.h       # observações significativas e estado físico
@@ -362,7 +362,7 @@ Sem relógio válido, a coluna de data mostra `sem-relogio` e a ordem fica garan
 - `iot_publish` é chamado fora do callback de hardware, nunca bloqueia a atividade, e o retorno `false` só é contado e registrado.
 - O serializador `hidra_event_to_json()` reproduz **exatamente** o JSON de exemplo da apostila (verificado em teste) e recusa eventos > 1024 bytes sem truncar.
 
-Enquanto o módulo real não existe, `HidraIotStub.cpp` imprime cada evento como linha `IOT> {...}` no Serial, no formato completo. Para integrar: definir `HIDRA_IOT_STUB 0` (ou remover o stub) e adicionar os arquivos da Etapa 3 em `src/iot/`.
+No modo Arduino IDE, `HidraIotStub.cpp` imprime cada evento como linha `IOT> {...}`. O ambiente PlatformIO `esp32-integrated`, em `HIDRA_Etapa3/firmware`, define `HIDRA_IOT_STUB=0` e compila esta etapa como biblioteca local. O adapter em `HIDRA_Etapa3/firmware/iot/src/orchestrator_adapter.cpp` conecta a interface ao transporte real, sem copiar o orquestrador. Veja [INTEGRACAO.md](HIDRA_Etapa3/docs/INTEGRACAO.md).
 
 ### 12.2. Valores enumerados definidos pela Etapa 2 (para as regras do Firebase e o app)
 
@@ -374,12 +374,15 @@ Enquanto o módulo real não existe, `HidraIotStub.cpp` imprime cada evento como
 | `reason` em `activity_aborted` | `restart`, `local_cancel` |
 | `alert_id` | `a1`, `a2`, … (único dentro da sessão) |
 
-### 12.3. Pontos a combinar com o Thiago
+### 12.3. Contrato implementado com a etapa 3
 
-1. **`iot_update_status(const HidraStatusSnapshot&)`** — extensão proposta. A apostila pede que a Etapa 2 forneça "o snapshot atual para status", mas a interface só tem `iot_publish`. O orquestrador chama essa função a cada mudança; o módulo IoT guarda a cópia (com mutex, pois roda em outra tarefa) e publica `/status` a cada 30 s.
-2. **`session_order`** — o `summary` precisa de um contador persistente por dispositivo. O orquestrador já mantém esse contador na NVS e o envia em `activity_started.data.session_order`. Esse campo **não** está na tabela de campos da apostila: incluir na validação do Firebase, ou o módulo IoT deve retirá-lo e manter um contador próprio.
-3. **`boot_id`** — gerado em `contrato/HidraEvent.cpp` a partir do contador de boots da NVS (`hidra_boot_id()`), para que `session_id` (orquestrador) e `event_id` (IoT) usem o mesmo valor. O módulo IoT deve usar essa função em vez de gerar outro.
-4. **Estado quando ocioso** — `status.state` deve ficar entre E0 e E5; entre sessões o snapshot informa `activity_active = false` e o último estado (normalmente E5).
+1. **Snapshot:** `iot_update_status` copia `HidraStatusSnapshot` sob seção crítica. A presença inclui atividade ativa, sequência, tentativa, quantidade de alertas e disponibilidade/massa; publicação a cada 30 s quando conectado.
+2. **Ordem:** `activity_started.data.session_order` é aceito pelas regras e preservado no resumo. O contador NVS é elevado ao maior ordinal recuperado do transporte antes de novas sessões, permitindo a migração do firmware de ensaio.
+3. **Boot:** o transporte recebe `hidra_boot_id()` e usa o mesmo valor da sessão. O contador não é mais truncado em 16 bits.
+4. **Ocioso:** `status.state` continua E0–E5; `activity_active=false` distingue ausência de atividade. O Android apresenta esse estado.
+5. **Recuperação:** o sketch combina a referência NVS com a última sequência persistida no diário para a mesma sessão e executa a recuperação da etapa 2 antes de aceitar outra atividade. Aceitação em RAM ainda não garante persistência.
+
+Os testes nativos da ponte usam o orquestrador real; um cenário também é publicado no emulador com autenticação e regras. O firmware integrado foi compilado com o hardware real. Os ensaios de sensores, áudio e latência permanecem na bancada; consulte [VALIDACAO.md](HIDRA_Etapa3/docs/VALIDACAO.md).
 
 ---
 
@@ -452,6 +455,6 @@ Resultado atual: **73/73 verificações e teste de fumaça OK**, sem avisos de c
 2. **Ajustar os limiares com o copo real** (`copo`, `set ocupada`, `set agua`). Os valores padrão supõem um copo ≥ 20 g e pelo menos 50 ml de água.
 3. **Confirmar a montagem da microchave** (acionada = copo na base). Se for o contrário: `set chave 0`.
 4. **Mensagem de E4 (opcional).** Confirmado que a pessoa devolve o copo na balança depois de beber. Se ela demorar, o lembrete hoje usa `0007` ("Vamos continuar? Ainda falta uma etapa"). Uma **9ª mensagem** mais específica ("Quando terminar de beber, coloque o copo de volta na plataforma") deixaria a instrução mais clara; isso exige mudar `ULTIMA_FAIXA_MP3` para 9 em `Config.h` (combinar com o Fernando) e trocar `FAIXA_CONTINUAR` por 9 na etapa E4 de `DefinicaoAtividade.cpp`.
-5. **Pontos de contrato com a Etapa 3** (seção 12.3): `iot_update_status`, `session_order`, `boot_id` compartilhado e estado no modo ocioso.
+5. **Contrato implementado com a Etapa 3** (seção 12.3): `iot_update_status`, `session_order`, `boot_id` compartilhado e estado no modo ocioso.
 6. **Apostila:** RNF_EXTENSIBILIDADE fala em "arquivo de configuração"; a implementação usa **tabelas** separadas do motor (`DefinicaoAtividade.cpp`). Vale ajustar o texto ou, no futuro, carregar a tabela de um JSON no LittleFS. O requisito RF_REFORCO_CONCLUSAO tem a descrição copiada de RF_REPETIR_INSTRUCAO na apostila — corrigir para "reproduzir mensagem positiva ao concluir".
 7. **Sessão parada em alerta.** Uma sessão em alerta só termina por progresso, cancelamento (botão longo) ou reinício. Não há encerramento automático por tempo, pois o contrato só prevê `restart` e `local_cancel` para `activity_aborted`.

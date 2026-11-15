@@ -5,7 +5,7 @@ import re
 
 STATES = {f'E{i}' for i in range(6)}
 FIELDS = {
-    'activity_started': ({'trigger'}, set()),
+    'activity_started': ({'trigger'}, {'session_order'}),
     'state_changed': ({'previous_state'}, {'mass_g'}),
     'instruction_played': ({'instruction_id', 'attempt'}, set()),
     'caregiver_alert': ({'alert_id', 'reason', 'attempt'}, set()),
@@ -42,8 +42,8 @@ def validate(event):
     if not isinstance(data, dict) or not required <= data.keys() or data.keys() - required - optional:
         raise ValueError('Dados incompatíveis com o tipo de evento')
     for field, value in data.items():
-        if field == 'attempt' and not natural(value, 1):
-            raise ValueError('Tentativa deve ser inteiro positivo')
+        if field in ('attempt', 'session_order') and not natural(value, 1):
+            raise ValueError('Tentativa e ordem devem ser inteiros positivos')
         if field in ('mass_g', 'estimated_intake_ml') and (
             type(value) not in (int, float) or not math.isfinite(value) or value < 0
         ):
@@ -88,6 +88,9 @@ def summarize(events, session_order, incomplete=False):
         raise ValueError('Sequência repetida com identificadores distintos')
     if not natural(session_order, 1):
         raise ValueError('session_order inválido')
+    producer_order = next((e.get('data', {}).get('session_order') for e in ordered if e['type'] == 'activity_started' and 'session_order' in e.get('data', {})), None)
+    if producer_order is not None:
+        session_order = producer_order
     result = dict(session_order=session_order, result='in_progress',
                   last_sequence=ordered[-1]['sequence'], last_state=ordered[-1]['state'],
                   instruction_count=0, alert_count=0,

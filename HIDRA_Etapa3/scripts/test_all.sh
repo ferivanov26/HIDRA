@@ -13,7 +13,7 @@ if ! command -v g++ >/dev/null; then
     echo "Instale g++ para executar os testes do programa C++ de demonstração." >&2
     exit 1
 fi
-python3 -m unittest tests.test_simulator tests.test_firmware_demo -v
+python3 -m unittest tests.test_simulator tests.test_firmware_demo tests.test_orchestrator_bridge -v
 env -u DEBUG npm --prefix firebase test
 env -u DEBUG firebase/node_modules/.bin/firebase emulators:exec --config firebase/firebase.json \
     --only auth,database --project demo-hidra \

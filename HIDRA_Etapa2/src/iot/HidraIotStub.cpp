@@ -60,4 +60,6 @@ IotStatus iot_get_status() {
 void iot_update_status(const HidraStatusSnapshot& snapshot) {
   g_status = snapshot; // o modulo real publicaria /status a cada 30 s
 }
+uint32_t iot_last_session_order() { return 0; }
+IotRecoveredSession iot_recovered_session() { return {}; }
 #endif

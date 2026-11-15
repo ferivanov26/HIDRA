@@ -1,4 +1,5 @@
 #include "PersistenciaHidra.h"
+#include "../iot/HidraIot.h"
 #include <Preferences.h>
 #include <LittleFS.h>
 #include <string.h>
@@ -19,7 +20,11 @@ constexpr const char* CABECALHO =
 
 bool PersistenciaHidra::iniciar() {
   nvs_ok_ = prefs.begin(NAMESPACE, false);
-  fs_ok_ = LittleFS.begin(true); // formata na primeira execucao
+#if HIDRA_IOT_STUB
+  fs_ok_ = LittleFS.begin(true); // diagnóstico standalone da etapa 2
+#else
+  fs_ok_ = LittleFS.begin(false); // preservar diário IoT; preparo inicial explícito
+#endif
   if (fs_ok_ && !LittleFS.exists(LOG_ATUAL)) {
     File f = LittleFS.open(LOG_ATUAL, FILE_WRITE);
     if (f) { f.println(CABECALHO); f.close(); }
@@ -53,6 +58,10 @@ uint32_t PersistenciaHidra::proximaOrdemSessao() {
   const uint32_t n = prefs.getUInt(K_ORDEM, 0) + 1;
   prefs.putUInt(K_ORDEM, n);
   return n;
+}
+
+void PersistenciaHidra::garantirOrdemSessaoMinima(uint32_t ordem) {
+  if (nvs_ok_ && prefs.getUInt(K_ORDEM, 0) < ordem) prefs.putUInt(K_ORDEM, ordem);
 }
 
 bool PersistenciaHidra::lerSessaoAberta(SessaoPersistida& s) {

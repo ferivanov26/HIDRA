@@ -12,37 +12,37 @@
 <!-- source -->
 <g id="node1" class="node">
 <title>source</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M370,-671C370,-671 165,-671 165,-671 159,-671 153,-665 153,-659 153,-659 153,-639 153,-639 153,-633 159,-627 165,-627 165,-627 370,-627 370,-627 376,-627 382,-633 382,-639 382,-639 382,-659 382,-659 382,-665 376,-671 370,-671"/>
-<text text-anchor="middle" x="267.5" y="-652.4" font-family="DejaVu Sans" font-size="12.00">Orquestrador local — etapa 2</text>
-<text text-anchor="middle" x="267.5" y="-639.4" font-family="DejaVu Sans" font-size="12.00">Eventos interpretados + snapshot</text>
+<path fill="white" stroke="#475569" d="M364,-671C364,-671 159,-671 159,-671 153,-671 147,-665 147,-659 147,-659 147,-639 147,-639 147,-633 153,-627 159,-627 159,-627 364,-627 364,-627 370,-627 376,-633 376,-639 376,-639 376,-659 376,-659 376,-665 370,-671 364,-671"/>
+<text text-anchor="middle" x="261.5" y="-652.4" font-family="DejaVu Sans" font-size="12.00">Orquestrador local — etapa 2</text>
+<text text-anchor="middle" x="261.5" y="-639.4" font-family="DejaVu Sans" font-size="12.00">Eventos interpretados + snapshot</text>
 </g>
 <!-- api -->
 <g id="node2" class="node">
 <title>api</title>
-<path fill="#f1f5f9" stroke="#475569" d="M288.5,-586C288.5,-586 26.5,-586 26.5,-586 20.5,-586 14.5,-580 14.5,-574 14.5,-574 14.5,-554 14.5,-554 14.5,-548 20.5,-542 26.5,-542 26.5,-542 288.5,-542 288.5,-542 294.5,-542 300.5,-548 300.5,-554 300.5,-554 300.5,-574 300.5,-574 300.5,-580 294.5,-586 288.5,-586"/>
-<text text-anchor="middle" x="157.5" y="-567.4" font-family="DejaVu Sans" font-size="12.00">iot_publish(event)</text>
-<text text-anchor="middle" x="157.5" y="-554.4" font-family="DejaVu Sans" font-size="12.00">Valida e copia; retorna sem rede nem Flash</text>
+<path fill="#f1f5f9" stroke="#475569" d="M276.5,-586C276.5,-586 14.5,-586 14.5,-586 8.5,-586 2.5,-580 2.5,-574 2.5,-574 2.5,-554 2.5,-554 2.5,-548 8.5,-542 14.5,-542 14.5,-542 276.5,-542 276.5,-542 282.5,-542 288.5,-548 288.5,-554 288.5,-554 288.5,-574 288.5,-574 288.5,-580 282.5,-586 276.5,-586"/>
+<text text-anchor="middle" x="145.5" y="-567.4" font-family="DejaVu Sans" font-size="12.00">iot_publish(event)</text>
+<text text-anchor="middle" x="145.5" y="-554.4" font-family="DejaVu Sans" font-size="12.00">Valida e copia; retorna sem rede nem Flash</text>
 </g>
 <!-- source&#45;&gt;api -->
 <g id="edge1" class="edge">
 <title>source&#45;&gt;api</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M230.25,-626.81C222.87,-622.18 215.3,-617.13 208.5,-612 200.88,-606.25 193.08,-599.55 185.95,-593.04"/>
-<polygon fill="#475569" stroke="#475569" points="188.22,-590.37 178.52,-586.11 183.44,-595.49 188.22,-590.37"/>
-<text text-anchor="middle" x="274" y="-604" font-family="DejaVu Sans" font-size="10.00">integração ainda pendente</text>
+<path fill="none" stroke="#475569" d="M186.1,-626.76C178.6,-622.66 171.54,-617.79 165.5,-612 160.79,-607.49 157.14,-601.7 154.32,-595.73"/>
+<polygon fill="#475569" stroke="#475569" points="157.53,-594.34 150.56,-586.36 151.04,-596.95 157.53,-594.34"/>
+<text text-anchor="middle" x="259" y="-604" font-family="DejaVu Sans" font-size="10.00">adapter: contrato canônico → HidraIoT</text>
 </g>
 <!-- status -->
 <g id="node9" class="node">
 <title>status</title>
 <path fill="#f1f5f9" stroke="#475569" d="M491.5,-527C491.5,-527 265.5,-527 265.5,-527 259.5,-527 253.5,-521 253.5,-515 253.5,-515 253.5,-482 253.5,-482 253.5,-476 259.5,-470 265.5,-470 265.5,-470 491.5,-470 491.5,-470 497.5,-470 503.5,-476 503.5,-482 503.5,-482 503.5,-515 503.5,-515 503.5,-521 497.5,-527 491.5,-527"/>
-<text text-anchor="middle" x="378.5" y="-508.4" font-family="DejaVu Sans" font-size="12.00">iot_set_snapshot(snapshot)</text>
+<text text-anchor="middle" x="378.5" y="-508.4" font-family="DejaVu Sans" font-size="12.00">iot_update_status → iot_set_snapshot</text>
 <text text-anchor="middle" x="378.5" y="-495.4" font-family="DejaVu Sans" font-size="12.00">Presença a cada 30 s</text>
 <text text-anchor="middle" x="378.5" y="-482.4" font-family="DejaVu Sans" font-size="12.00">Independente do reenvio do histórico</text>
 </g>
 <!-- source&#45;&gt;status -->
 <g id="edge11" class="edge">
 <title>source&#45;&gt;status</title>
-<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M323.53,-626.98C330.2,-622.77 336.43,-617.81 341.5,-612 359.76,-591.09 369.05,-560.94 373.75,-537.12"/>
-<polygon fill="#475569" stroke="#475569" points="377.25,-537.47 375.56,-527.01 370.36,-536.24 377.25,-537.47"/>
+<path fill="none" stroke="#475569" stroke-dasharray="5,2" d="M337.04,-626.75C343.57,-622.67 349.56,-617.8 354.5,-612 371.99,-591.48 377.71,-561.31 379.2,-537.38"/>
+<polygon fill="#475569" stroke="#475569" points="382.71,-537.35 379.62,-527.21 375.71,-537.06 382.71,-537.35"/>
 </g>
 <!-- ram -->
 <g id="node3" class="node">
@@ -54,7 +54,7 @@
 <!-- api&#45;&gt;ram -->
 <g id="edge2" class="edge">
 <title>api&#45;&gt;ram</title>
-<path fill="none" stroke="#475569" d="M121.84,-541.73C117.26,-537.45 113.23,-532.53 110.5,-527 99.29,-504.28 104.96,-494.72 110.5,-470 110.88,-468.28 111.36,-466.55 111.91,-464.83"/>
+<path fill="none" stroke="#475569" d="M119.86,-541.75C116.04,-537.31 112.66,-532.33 110.5,-527 100.97,-503.53 104.96,-494.72 110.5,-470 110.88,-468.28 111.36,-466.55 111.91,-464.83"/>
 <polygon fill="#475569" stroke="#475569" points="115.31,-465.74 115.64,-455.15 108.78,-463.22 115.31,-465.74"/>
 <text text-anchor="middle" x="175.5" y="-496" font-family="DejaVu Sans" font-size="10.00">true = aceito em memória</text>
 </g>

@@ -2,8 +2,8 @@
 
 Módulo de comunicação e consulta dos eventos da atividade. O processamento dos
 sensores e as decisões de áudio permanecem no orquestrador local. Esta pasta
-segue a divisão por etapas do repositório e contém projetos independentes para
-o ESP32, o computador e o Android.
+segue a divisão por etapas do repositório e contém o firmware integrado do
+ESP32, o simulador para computador e o aplicativo Android.
 
 ## Estrutura
 
@@ -23,7 +23,7 @@ o ESP32, o computador e o Android.
 - Node.js 22 e JDK 21: Firebase CLI 15.34.2 e emuladores.
 - JDK 17, SDK Android 35 e Build Tools 34.0.0: aplicativo Android, API mínima 26.
 - PlatformIO 6.2.0: plataforma Espressif32 6.10.0 e ArduinoJson 7.3.0.
-- G++ com C++17: cinco testes do programa de demonstração no computador.
+- G++ com C++17: testes do programa de demonstração e da ponte com o orquestrador real.
 - Graphviz: regeneração opcional dos diagramas técnicos.
 
 Os scripts aceitam `HIDRA_FIREBASE_JAVA_HOME` e `HIDRA_ANDROID_JAVA_HOME` para
@@ -143,6 +143,7 @@ remotos. Conclusão observável e estimativa de volume não confirmam ingestão.
 ## ESP32
 
 ```bash
+pio run -d firmware -e esp32-integrated
 pio run -d firmware -e esp32dev
 pio run -d firmware -e esp32-synthetic
 pio run -d firmware -e esp32-network-probe
@@ -165,17 +166,17 @@ verifica Wi-Fi, UTC, TLS e montagem do LittleFS sem publicar eventos.
 
 A integração física com o Firebase foi validada em 15/11/2026: duas sessões
 fictícias de sete eventos, incluindo reconexão após reinício, foram confirmadas
-na nuvem e lidas com a conta do cuidador. A placa de bancada permanece com
-`esp32-synthetic`; `hidra_01` está identificado como `simulator`. Não execute
+na nuvem e lidas com a conta do cuidador. Esse foi o ensaio anterior com `esp32-synthetic`; `hidra_01` continua identificado como `simulator` durante a validação de integração. Não execute
 novamente a preparação do LittleFS para repetir esse ensaio.
+
+Na integração com a etapa 2, a placa foi atualizada para `esp32-integrated`. Início/cancelamento e reinício de sessão aberta foram confirmados no Firebase real e lidos pelo cuidador, com ordens 3 e 4 e sem pendências/perdas ao final. Os testes não incluem o ciclo físico completo com sensores e áudio.
 
 A configuração na nuvem, as contas, os vínculos e a preparação inicial do
 LittleFS estão em [FIREBASE_SPARK.md](docs/FIREBASE_SPARK.md). O projeto pode
 usar somente o plano gratuito Spark, sem vincular faturamento.
 
 A [interface com o orquestrador](docs/INTEGRACAO.md) descreve inicialização,
-publicação, snapshots e recuperação. A etapa 1 usa outro core ESP32; as duas
-aplicações não são compiladas juntas automaticamente.
+publicação, snapshots e recuperação. O ambiente `esp32-integrated` compila o sketch e o hardware da etapa 2 junto ao transporte real; use esse ambiente para o projeto completo. Na Serial, use `iniciar`, `cancelar` e `s`, com final de linha Nova linha. O modo Arduino IDE da etapa 2 mantém o stub local.
 
 ## Testes e regras
 
@@ -186,7 +187,7 @@ bash scripts/test_all.sh
 ```
 
 O script executa 14 testes Python do simulador, cinco testes do programa C++
-de demonstração, sete testes de regras e quatro testes REST.
+de demonstração, quatro testes da ponte com a etapa 2, nove testes de regras e cinco testes REST. A ponte cobre ciclo com volume, alertas, reinício e conclusão na base sem volume; o REST também publica eventos do orquestrador real.
 Os testes REST preparam os dados locais novamente. Não execute outra
 instância dos emuladores ou uma coleta de dados nessas portas ao mesmo tempo.
 

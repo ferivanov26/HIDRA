@@ -120,7 +120,7 @@ size_t hidra_event_to_json(const HidraEvent& ev, const char* device_id,
 namespace { char g_boot_id[12] = "0000"; }
 
 void hidra_set_boot_counter(uint32_t boot_counter) {
-  snprintf(g_boot_id, sizeof(g_boot_id), "%04lx", (unsigned long)(boot_counter & 0xFFFFu));
+  snprintf(g_boot_id, sizeof(g_boot_id), "%04lx", (unsigned long)boot_counter);
 }
 
 const char* hidra_boot_id() { return g_boot_id; }

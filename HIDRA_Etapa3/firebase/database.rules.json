@@ -35,6 +35,24 @@
           "dropped_count": {
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
           },
+          "activity_active": {
+            ".validate": "newData.isBoolean()"
+          },
+          "sequence": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "attempt": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "active_alert_count": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "mass_available": {
+            ".validate": "newData.isBoolean()"
+          },
+          "mass_g": {
+            ".validate": "newData.isNumber()"
+          },
           "$other": {
             ".validate": "false"
           }
@@ -159,6 +177,9 @@
                     },
                     "reason": {
                       ".validate": "(newData.parent().parent().child('type').val() == 'caregiver_alert' || newData.parent().parent().child('type').val() == 'alert_resolved' || newData.parent().parent().child('type').val() == 'activity_aborted') && (newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/) && (newData.parent().parent().child('type').val() != 'activity_aborted' || newData.val() == 'restart' || newData.val() == 'local_cancel'))"
+                    },
+                    "session_order": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'activity_started') && (newData.isNumber() && newData.val() >= 1 && newData.val() % 1 == 0)"
                     },
                     "trigger": {
                       ".validate": "(newData.parent().parent().child('type').val() == 'activity_started') && (newData.val() == 'button' || newData.val() == 'schedule')"

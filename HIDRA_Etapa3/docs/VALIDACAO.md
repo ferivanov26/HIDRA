@@ -110,3 +110,42 @@ wifi=1 auth=1 pending=0 dropped=0 error=0
 O banco confirmou a presença, o resumo completo e a leitura das sessões pela conta do cuidador. O resultado sanitizado e os logs estão em `.runtime/esp32-cloud/resultado.json` e `.runtime/esp32-cloud/*-serial.txt`. O backup está em `.runtime/esp32-cloud/flash-anterior.bin`, ignorado pelo Git. A placa permaneceu com o firmware de ensaio; não foi restaurada ao firmware anterior.
 
 Este ensaio comprova ESP32 → Firebase → leitura autenticada pelo cuidador via REST. Não executa as telas Android, não utiliza sensores e não demonstra recuperação de eventos em queda de energia. O reinício foi realizado com a primeira sessão já confirmada. O teste de sessão aberta/pendente durante reinício permanece separado.
+
+## Integração com a main — 15/11/2026
+
+Base incorporada: `origin/main` em `3a9a5b5`, com o orquestrador da etapa 2. O merge local foi registrado em `3806284`; os resultados anteriores acima são históricos e as limitações superadas estão explicitadas nesta revisão.
+
+| Verificação | Resultado |
+|---|---|
+| Contrato e diário do simulador | 14 testes aprovados |
+| Programa C++ de demonstração | 5 testes aprovados |
+| Adapter + orquestrador real | 4 testes aprovados |
+| Regras Firebase | 9 testes aprovados |
+| Auth/RTDB REST nos emuladores | 5 testes aprovados, incluindo eventos da etapa 2 |
+| ViewModel Android | 4 testes aprovados |
+| Android | Lint aprovado e três variantes APK compiladas |
+| Firmware PlatformIO | `esp32dev`, `esp32-synthetic`, `esp32-network-probe` e `esp32-integrated` compilados |
+| Etapa 2 na raiz | 73 assertivas em 14 cenários e teste de fumaça em duas fases aprovados |
+
+Total da etapa 3: **41 testes automatizados aprovados**, além da suíte da etapa 2. A ponte cobre retorno à balança com volume estimado, conclusão pela base sem volume, alerta/resolução e reinício com continuação de sequência. Verifica também boot acima de 65535 e preservação da ordem NVS no adapter. O teste de fumaça valida a elevação do piso da ordem NVS sem regressão.
+
+O projeto real está configurado, e as regras atualizadas foram publicadas pelo responsável. A configuração privada da ESP32 foi autenticada com sucesso pelo computador. A Flash de 4 MiB anterior à integração está preservada em `.runtime/merge-main/flash-before-integrated.bin`. Nenhuma credencial, token ou imagem de Flash integra o Git.
+
+Para repetir: execute `bash tests/run_tests.sh` na raiz e `bash scripts/test_all.sh` na pasta da etapa 3. O firmware integrado usa `pio run -d firmware -e esp32-integrated`. Veja [INTEGRACAO.md](INTEGRACAO.md) para configuração, console e bancada.
+
+Permanecem sem homologação a aquisição com copo real, áudio efetivamente audível, RNF_LATENCIA, atualização remota em até 5 s, execução das telas Android em aparelho e recuperação sob corte físico de energia. O retorno positivo da fila não elimina a janela de perda em RAM. A nona faixa sugerida depende de gravação e alteração do limite; o código continua com oito faixas.
+
+### ESP32 integrada e Firebase real
+
+A sessão `0002_s001` teve quatro eventos contíguos: início, instrução, E0→E1 e cancelamento local. O `session_order=3` continuou os ordinais 1/2 do firmware anterior; o boot `0002` coincidiu com o prefixo da sessão e os eventos. O resumo recebido foi `aborted`, sem lacuna, e a conta do cuidador leu os mesmos registros.
+
+Uma falha inicial de conexão HTTPS impediu autenticar; os quatro eventos permaneceram no diário. Após reinício, a placa autenticou e drenou os registros. A presença confirmou `activity_active=false`, pendências zero e perdas zero. Isso valida esse caso de reconexão com diário persistido, sem caracterizar ensaio exaustivo de indisponibilidade ou corte de energia.
+
+O ensaio de sessão aberta utilizou `0004_s001`, com `session_order=4`. Após três eventos no boot `0004`, o reinício controlado gerou `activity_aborted/restart` com sequência 4 no boot `0005`, preservando o identificador original da sessão. O banco e a leitura do cuidador confirmaram os quatro eventos contíguos, resumo `aborted` e histórico completo. A presença final informou:
+
+```text
+IoT: wifi=1 auth=1 pendentes=0 perdidos=0 recusados=0 erro=''
+activity_active=false; session_id=0004_s001; sequence=4; boot_id=0005
+```
+
+A ESP32 permaneceu com `esp32-integrated`; `metadata/source=simulator` identifica estes ensaios comandados pela Serial. Não houve ensaio de beber água ou áudio medido na montagem. Os registros sanitizados estão em `.runtime/merge-main/verified-integrated.json`, `serial-integrated.txt` e `restart-serial.txt`, ignorados pelo Git.

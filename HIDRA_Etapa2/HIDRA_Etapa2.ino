@@ -1,6 +1,6 @@
 // =============================================================================
 // HIDRA — Firmware integrado: Etapa 1 (hardware) + Etapa 2 (orquestrador)
-//          + interface da Etapa 3 (IoT, por enquanto stub serial)
+//          + Etapa 3: stub serial ou transporte real no esp32-integrated
 // -----------------------------------------------------------------------------
 // Arduino IDE: placa "ESP32 Dev Module" (core Espressif 3.3.x), biblioteca
 // HX711 (bogde), Partition Scheme "Default 4MB with spiffs". Monitor Serial
@@ -29,12 +29,15 @@
 
 // ---- Identificacao do dispositivo para a Etapa 3 -----------------------------
 // Credenciais NAO devem ser versionadas (apostila, "Configuracao e diagnostico").
+#if !HIDRA_IOT_STUB && __has_include("secrets.h")
+#include "secrets.h"
 static const IotConfig CONFIG_IOT = {
-  "hidra_01", // device_id
-  "", "",     // SSID e senha (preencher localmente)
-  "", "",     // URL do Realtime Database e chave do projeto
-  "", ""      // e-mail e senha tecnicos do dispositivo
+  HIDRA_DEVICE_ID, HIDRA_SSID, HIDRA_WIFI_PASSWORD, HIDRA_DATABASE_URL,
+  HIDRA_API_KEY, HIDRA_EMAIL, HIDRA_PASSWORD
 };
+#else
+static const IotConfig CONFIG_IOT = {"hidra_01", "", "", "", "", "", ""};
+#endif
 
 // ---- Objetos do sistema --------------------------------------------------------
 ParametrosAtividade g_param;
@@ -81,7 +84,11 @@ static LeituraFisica converter(const Hidra::EventoFisico& e) {
 void setup() {
   Serial.begin(HidraConfig::SERIAL_DIAGNOSTICO_BAUD);
   delay(200);
-  Serial.println("\nHIDRA - firmware integrado (Etapas 1 + 2) v2.0");
+  #if HIDRA_IOT_STUB
+  Serial.println("\nHIDRA - firmware local (Etapas 1 + 2) v2.0");
+#else
+  Serial.println("\nHIDRA - firmware integrado (Etapas 1 + 2 + 3) v2.0");
+#endif
   Serial.println("IMPORTANTE: plataforma VAZIA (tara) e copo na base durante a inicializacao.");
 
   // 1) Persistencia: boot_id, parametros do cuidador
@@ -99,6 +106,7 @@ void setup() {
 
   // 3) Modulo IoT (Etapa 3)
   iot_begin(CONFIG_IOT);
+  g_pers.garantirOrdemSessaoMinima(iot_last_session_order());
 
   // 4) Detector a partir do estado fisico atual
   const Hidra::LeituraHardware l = Hidra::obterLeitura();
@@ -106,8 +114,20 @@ void setup() {
 
   // 5) Sessao interrompida por queda de energia/reset => activity_aborted(restart)
   //    ANTES de aceitar uma nova atividade (apostila, "Ordenacao e reinicializacao").
-  SessaoPersistida s;
-  if (g_pers.lerSessaoAberta(s)) g_orq.recuperarSessao(s);
+  SessaoPersistida s{};
+  const auto recuperada = iot_recovered_session();
+  const bool sessao_nvs = g_pers.lerSessaoAberta(s);
+  if (sessao_nvs || recuperada.open) {
+    if (!sessao_nvs || strcmp(s.session_id, recuperada.session_id) == 0) {
+      if (!sessao_nvs || recuperada.last_sequence > s.ultima_sequencia) {
+        hidra_copy_text(s.session_id, sizeof(s.session_id), recuperada.session_id);
+        s.ultima_sequencia = recuperada.last_sequence;
+        s.estado = static_cast<uint8_t>(recuperada.state);
+      }
+    }
+    g_orq.recuperarSessao(s);
+  }
+  iot_update_status(g_orq.snapshot());
 
   g_saidas.registrarLocal("sistema iniciado");
   if (l.chave_inicial_acionada != g_param.chave_acionada_copo_na_base) {
