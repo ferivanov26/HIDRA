@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "3d9918aa70a442e2_s001",
+      "event_id": "3d9918aa70a442e2_e00001",
+      "sequence": 1,
+      "type": "activity_started",
+      "state": "E0",
+      "boot_id": "3d9918aa70a442e2",
+      "uptime_ms": 1000,
+      "occurred_at_ms": 1793518639775,
+      "data": {
+        "trigger": "button"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "3d9918aa70a442e2_s001",
+      "event_id": "3d9918aa70a442e2_e00002",
+      "sequence": 2,
+      "type": "state_changed",
+      "state": "E1",
+      "boot_id": "3d9918aa70a442e2",
+      "uptime_ms": 2000,
+      "occurred_at_ms": 1793518640775,
+      "data": {
+        "previous_state": "E0"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "3d9918aa70a442e2_s001",
+      "event_id": "3d9918aa70a442e2_e00003",
+      "sequence": 3,
+      "type": "instruction_played",
+      "state": "E1",
+      "boot_id": "3d9918aa70a442e2",
+      "uptime_ms": 3000,
+      "occurred_at_ms": 1793518641775,
+      "data": {
+        "instruction_id": "position_cup",
+        "attempt": 1
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "3d9918aa70a442e2_s001",
+      "event_id": "3d9918aa70a442e2_e00004",
+      "sequence": 4,
+      "type": "caregiver_alert",
+      "state": "E1",
+      "boot_id": "3d9918aa70a442e2",
+      "uptime_ms": 4000,
+      "occurred_at_ms": 1793518642775,
+      "data": {
+        "alert_id": "3d9918aa70a442e2_a1",
+        "reason": "timeout",
+        "attempt": 3
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "3d9918aa70a442e2_s001",
+      "event_id": "3d9918aa70a442e2_e00005",
+      "sequence": 5,
+      "type": "activity_aborted",
+      "state": "E1",
+      "boot_id": "3d9918aa70a442e2",
+      "uptime_ms": 5000,
+      "occurred_at_ms": 1793518643775,
+      "data": {
+        "reason": "local_cancel"
+      }
+    }
+  ],
+  "summary": {
+    "session_order": 1,
+    "result": "aborted",
+    "last_sequence": 5,
+    "last_state": "E1",
+    "instruction_count": 1,
+    "alert_count": 1,
+    "history_incomplete": false,
+    "started_at_ms": 1793518639775,
+    "ended_at_ms": 1793518643775,
+    "active_alerts": {
+      "3d9918aa70a442e2_a1": {
+        "reason": "timeout",
+        "occurred_at_ms": 1793518642775
+      }
+    }
+  }
+}

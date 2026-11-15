@@ -19,6 +19,7 @@ class PersistenciaHidra {
   bool     carregarParametros(ParametrosAtividade& p);
   bool     salvarParametros(const ParametrosAtividade& p);
   uint32_t proximaOrdemSessao();
+  void garantirOrdemSessaoMinima(uint32_t ordem);
 
   bool lerSessaoAberta(SessaoPersistida& s);
   void salvarSessaoAberta(const SessaoPersistida& s);

@@ -1,0 +1,16 @@
+digraph Android {
+ graph [rankdir=TB,bgcolor="white",pad="0.25",nodesep="0.4",ranksep="0.45",dpi=180];
+ node [shape=box,style="rounded,filled",fillcolor="#f1f5f9",color="#475569",fontname="DejaVu Sans",fontsize=12,margin="0.18,0.12"];
+ edge [color="#475569",fontname="DejaVu Sans",fontsize=10];
+ auth [label="Acesso: AuthRepository\nConta já cadastrada pelo responsável"];
+ devices [label="Dispositivos vinculados\n1: abre direto • vários: seleção • nenhum: mensagem"];
+ dashboard [label="Acompanhamento\nEstado + presença + pendências\nAlertas apenas da sessão atual"];
+ history [label="Histórico\n20 sessões por página\nOrdenação por session_order"];
+ details [label="Detalhes\nEventos ordenados por sequence\nResultado, instruções e alertas"];
+ vm [label="HidraViewModel + UiState\nCarregamento • conteúdo • vazio • erro\nCancela listeners ao sair ou encerrar sessão",fillcolor="#e0edf5"];
+ fake [label="FakeHidraRepository\nVariante demo\nDados fictícios"];
+ firebase [label="FirebaseHidraRepository\nVariantes emulator / cloud\nAuth + RTDB"];
+ auth -> devices -> dashboard -> history -> details;
+ dashboard -> vm [dir=both]; history -> vm [dir=both]; details -> vm [dir=both];
+ vm -> fake; vm -> firebase;
+}

@@ -1,0 +1,167 @@
+{
+  "events": [
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00001",
+      "sequence": 1,
+      "type": "activity_started",
+      "state": "E0",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 1000,
+      "occurred_at_ms": 1793518639676,
+      "data": {
+        "trigger": "button"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00002",
+      "sequence": 2,
+      "type": "state_changed",
+      "state": "E1",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 2000,
+      "occurred_at_ms": 1793518640676,
+      "data": {
+        "previous_state": "E0"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00003",
+      "sequence": 3,
+      "type": "state_changed",
+      "state": "E2",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 3000,
+      "occurred_at_ms": 1793518641676,
+      "data": {
+        "previous_state": "E1"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00004",
+      "sequence": 4,
+      "type": "instruction_played",
+      "state": "E2",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 4000,
+      "occurred_at_ms": 1793518642676,
+      "data": {
+        "instruction_id": "fill_cup",
+        "attempt": 1
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00005",
+      "sequence": 5,
+      "type": "caregiver_alert",
+      "state": "E2",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 5000,
+      "occurred_at_ms": 1793518643676,
+      "data": {
+        "alert_id": "a54f53dc1ab94431_a1",
+        "reason": "timeout",
+        "attempt": 3
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00006",
+      "sequence": 6,
+      "type": "alert_resolved",
+      "state": "E2",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 6000,
+      "occurred_at_ms": 1793518644676,
+      "data": {
+        "alert_id": "a54f53dc1ab94431_a1",
+        "reason": "progress"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00007",
+      "sequence": 7,
+      "type": "state_changed",
+      "state": "E3",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 7000,
+      "occurred_at_ms": 1793518645676,
+      "data": {
+        "previous_state": "E2",
+        "mass_g": 185.0
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00008",
+      "sequence": 8,
+      "type": "state_changed",
+      "state": "E4",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 8000,
+      "occurred_at_ms": 1793518646676,
+      "data": {
+        "previous_state": "E3"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00009",
+      "sequence": 9,
+      "type": "state_changed",
+      "state": "E5",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 9000,
+      "occurred_at_ms": 1793518647676,
+      "data": {
+        "previous_state": "E4"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "a54f53dc1ab94431_s001",
+      "event_id": "a54f53dc1ab94431_e00010",
+      "sequence": 10,
+      "type": "activity_completed",
+      "state": "E5",
+      "boot_id": "a54f53dc1ab94431",
+      "uptime_ms": 10000,
+      "occurred_at_ms": 1793518648676
+    }
+  ],
+  "summary": {
+    "session_order": 1,
+    "result": "completed",
+    "last_sequence": 10,
+    "last_state": "E5",
+    "instruction_count": 1,
+    "alert_count": 1,
+    "history_incomplete": false,
+    "started_at_ms": 1793518639676,
+    "ended_at_ms": 1793518648676
+  }
+}

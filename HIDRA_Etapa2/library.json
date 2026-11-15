@@ -1,0 +1,9 @@
+{
+  "name": "HidraOrchestrator",
+  "version": "2.0.0",
+  "description": "Hardware local e orquestrador E0-E5 do HIDRA",
+  "frameworks": "arduino",
+  "platforms": "espressif32",
+  "build": {"srcDir": "src", "includeDir": "src"},
+  "dependencies": {"bogde/HX711": "0.7.5"}
+}

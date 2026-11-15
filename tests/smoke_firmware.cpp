@@ -71,6 +71,10 @@ int main(int argc, char** argv) {
   if (!fase_b) {
     std::printf("Fase a: boot, agenda e sessao completa\n");
     check(contem(mock::saida_serial, "boot_id=0001"), "boot_id 0001 no primeiro boot");
+    g_pers.garantirOrdemSessaoMinima(37);
+    check(g_pers.proximaOrdemSessao() == 38, "migracao respeita ordem ja reservada pelo IoT");
+    g_pers.garantirOrdemSessaoMinima(2);
+    check(g_pers.proximaOrdemSessao() == 39, "ordem NVS nao retrocede ao receber piso antigo");
     cmd("relogio 2026-11-14 08:59:50");
     cmd("horarios 09:00");
     cmd("set e2 20");
