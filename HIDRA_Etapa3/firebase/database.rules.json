@@ -1,0 +1,184 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "caregiverDevices": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid"
+      }
+    },
+    "deviceOwners": {},
+    "devices": {
+      "$device": {
+        ".read": "auth != null && (root.child('deviceOwners').child($device).val() == auth.uid || root.child('caregiverDevices').child(auth.uid).child($device).val() == true)",
+        "status": {
+          ".write": "auth != null && root.child('deviceOwners').child($device).val() == auth.uid && newData.exists()",
+          ".validate": "newData.hasChildren(['boot_id','state','last_seen_ms','pending_count','dropped_count'])",
+          "boot_id": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/)"
+          },
+          "session_id": {
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/)"
+          },
+          "state": {
+            ".validate": "newData.isString() && newData.val().matches(/^E[0-5]$/)"
+          },
+          "last_seen_ms": {
+            ".validate": "newData.isNumber() && newData.val() == now"
+          },
+          "observed_at_ms": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "pending_count": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "dropped_count": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+          },
+          "$other": {
+            ".validate": "false"
+          }
+        },
+        "sessions": {
+          ".indexOn": [
+            "summary/session_order"
+          ],
+          "$session": {
+            "summary": {
+              ".write": "auth != null && root.child('deviceOwners').child($device).val() == auth.uid && newData.exists()",
+              ".validate": "newData.hasChildren([\"session_order\", \"result\", \"last_sequence\", \"last_state\", \"instruction_count\", \"alert_count\", \"history_incomplete\"]) && (!data.exists() || (newData.child('last_sequence').val() >= data.child('last_sequence').val() && newData.child('session_order').val() == data.child('session_order').val()))",
+              "session_order": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 == 0"
+              },
+              "last_sequence": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 == 0"
+              },
+              "last_state": {
+                ".validate": "newData.isString() && newData.val().matches(/^E[0-5]$/)"
+              },
+              "instruction_count": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "alert_count": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "result": {
+                ".validate": "newData.val() == 'in_progress' || newData.val() == 'completed' || newData.val() == 'aborted'"
+              },
+              "history_incomplete": {
+                ".validate": "newData.isBoolean()"
+              },
+              "started_at_ms": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "ended_at_ms": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+              },
+              "estimated_intake_ml": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "active_alerts": {
+                "$alert": {
+                  ".validate": "newData.hasChildren(['reason'])",
+                  "reason": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/)"
+                  },
+                  "occurred_at_ms": {
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+                  },
+                  "$other": {
+                    ".validate": "false"
+                  }
+                }
+              },
+              "$other": {
+                ".validate": "false"
+              }
+            },
+            "events": {
+              ".indexOn": [
+                "payload/sequence"
+              ],
+              "$event": {
+                ".write": "auth != null && root.child('deviceOwners').child($device).val() == auth.uid && !data.exists() && newData.exists()",
+                ".validate": "newData.hasChildren(['payload','received_at_ms'])",
+                "payload": {
+                  ".validate": "newData.hasChildren([\"schema_version\", \"device_id\", \"session_id\", \"event_id\", \"sequence\", \"type\", \"state\", \"boot_id\", \"uptime_ms\"]) && (newData.child('type').val() == 'activity_completed' || newData.hasChild('data')) && (newData.child('type').val() != 'activity_started' || newData.child('state').val() == 'E0') && (newData.child('type').val() != 'activity_completed' || newData.child('state').val() == 'E5')",
+                  "schema_version": {
+                    ".validate": "newData.isNumber() && newData.val() == 1"
+                  },
+                  "device_id": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/) && newData.val() == $device"
+                  },
+                  "session_id": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/) && newData.val() == $session"
+                  },
+                  "event_id": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/) && newData.val() == $event"
+                  },
+                  "sequence": {
+                    ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 == 0"
+                  },
+                  "type": {
+                    ".validate": "newData.val() == 'activity_started' || newData.val() == 'state_changed' || newData.val() == 'instruction_played' || newData.val() == 'caregiver_alert' || newData.val() == 'alert_resolved' || newData.val() == 'activity_completed' || newData.val() == 'activity_aborted'"
+                  },
+                  "state": {
+                    ".validate": "newData.isString() && newData.val().matches(/^E[0-5]$/)"
+                  },
+                  "boot_id": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/)"
+                  },
+                  "uptime_ms": {
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+                  },
+                  "occurred_at_ms": {
+                    ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() % 1 == 0"
+                  },
+                  "data": {
+                    ".validate": "(newData.parent().child('type').val() == 'activity_started' && newData.hasChildren([\"trigger\"])) || (newData.parent().child('type').val() == 'state_changed' && newData.hasChildren([\"previous_state\"])) || (newData.parent().child('type').val() == 'instruction_played' && newData.hasChildren([\"attempt\", \"instruction_id\"])) || (newData.parent().child('type').val() == 'caregiver_alert' && newData.hasChildren([\"alert_id\", \"attempt\", \"reason\"])) || (newData.parent().child('type').val() == 'alert_resolved' && newData.hasChildren([\"alert_id\", \"reason\"])) || (newData.parent().child('type').val() == 'activity_completed' && true) || (newData.parent().child('type').val() == 'activity_aborted' && newData.hasChildren([\"reason\"]))",
+                    "$other": {
+                      ".validate": "false"
+                    },
+                    "alert_id": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'caregiver_alert' || newData.parent().parent().child('type').val() == 'alert_resolved') && (newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/))"
+                    },
+                    "attempt": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'instruction_played' || newData.parent().parent().child('type').val() == 'caregiver_alert') && (newData.isNumber() && newData.val() >= 1 && newData.val() % 1 == 0)"
+                    },
+                    "estimated_intake_ml": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'activity_completed') && (newData.isNumber() && newData.val() >= 0)"
+                    },
+                    "instruction_id": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'instruction_played') && (newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/))"
+                    },
+                    "mass_g": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'state_changed') && (newData.isNumber() && newData.val() >= 0)"
+                    },
+                    "previous_state": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'state_changed') && (newData.isString() && newData.val().matches(/^E[0-5]$/))"
+                    },
+                    "reason": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'caregiver_alert' || newData.parent().parent().child('type').val() == 'alert_resolved' || newData.parent().parent().child('type').val() == 'activity_aborted') && (newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,63}$/) && (newData.parent().parent().child('type').val() != 'activity_aborted' || newData.val() == 'restart' || newData.val() == 'local_cancel'))"
+                    },
+                    "trigger": {
+                      ".validate": "(newData.parent().parent().child('type').val() == 'activity_started') && (newData.val() == 'button' || newData.val() == 'schedule')"
+                    }
+                  },
+                  "$other": {
+                    ".validate": "false"
+                  }
+                },
+                "received_at_ms": {
+                  ".validate": "newData.isNumber() && newData.val() == now"
+                },
+                "$other": {
+                  ".validate": "false"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

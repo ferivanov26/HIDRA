@@ -1,0 +1,37 @@
+# Python e execução local
+__pycache__/
+*.py[cod]
+.venv/
+.runtime/
+.pytest_cache/
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Dependências e artefatos de compilação
+node_modules/
+.gradle/
+.pio/
+build/
+*.apk
+*.aab
+
+# Configurações privadas e assinatura
+local.properties
+firebase.local.properties
+google-services.json
+secrets.h
+*.jks
+*.keystore
+.env
+.env.*
+!.env.example
+
+# IDE e arquivos do sistema
+.idea/
+*.iml
+.DS_Store
+
+# Exportações locais dos emuladores
+.emulator-data/

@@ -1,0 +1,118 @@
+{
+  "events": [
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00001",
+      "sequence": 1,
+      "type": "activity_started",
+      "state": "E0",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 1000,
+      "occurred_at_ms": 1793518639567,
+      "data": {
+        "trigger": "button"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00002",
+      "sequence": 2,
+      "type": "state_changed",
+      "state": "E1",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 2000,
+      "occurred_at_ms": 1793518640567,
+      "data": {
+        "previous_state": "E0"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00003",
+      "sequence": 3,
+      "type": "state_changed",
+      "state": "E2",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 3000,
+      "occurred_at_ms": 1793518641567,
+      "data": {
+        "previous_state": "E1"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00004",
+      "sequence": 4,
+      "type": "state_changed",
+      "state": "E3",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 4000,
+      "occurred_at_ms": 1793518642567,
+      "data": {
+        "previous_state": "E2",
+        "mass_g": 185.0
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00005",
+      "sequence": 5,
+      "type": "state_changed",
+      "state": "E4",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 5000,
+      "occurred_at_ms": 1793518643567,
+      "data": {
+        "previous_state": "E3"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00006",
+      "sequence": 6,
+      "type": "state_changed",
+      "state": "E5",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 6000,
+      "occurred_at_ms": 1793518644567,
+      "data": {
+        "previous_state": "E4"
+      }
+    },
+    {
+      "schema_version": 1,
+      "device_id": "sim_hidra_01",
+      "session_id": "6c1d360fa7684203_s001",
+      "event_id": "6c1d360fa7684203_e00007",
+      "sequence": 7,
+      "type": "activity_completed",
+      "state": "E5",
+      "boot_id": "6c1d360fa7684203",
+      "uptime_ms": 7000,
+      "occurred_at_ms": 1793518645567
+    }
+  ],
+  "summary": {
+    "session_order": 1,
+    "result": "completed",
+    "last_sequence": 7,
+    "last_state": "E5",
+    "instruction_count": 0,
+    "alert_count": 0,
+    "history_incomplete": false,
+    "started_at_ms": 1793518639567,
+    "ended_at_ms": 1793518645567
+  }
+}
