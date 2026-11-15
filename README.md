@@ -19,6 +19,8 @@ hardware, orquestração local e comunicação IoT/aplicativo.
 
 ## Documentação técnica
 
+- [Relatório completo e fontes da atualização da etapa 3](Documentos/README.md).
+
 - [Hardware e firmware da etapa 1](documentacao_hardware.md).
 - [Orquestrador da etapa 2](documentacao_orquestrador.md).
 - [IoT, Firebase e aplicativo da etapa 3](documentacao_iot_firebase_mobile.md).
