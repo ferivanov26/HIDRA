@@ -136,6 +136,8 @@ adb install -r android/app/build/outputs/apk/demo/debug/app-demo-debug.apk
 adb shell am start -n br.usp.hidra.demo/br.usp.hidra.MainActivity
 ```
 
+A versão 0.2.0 usa cartões de acompanhamento, linha do tempo, temas claro/escuro e seleção de dispositivos sem sair da conta. Os eventos têm descrições em português; campos do contrato ficam em “Dados técnicos”. Quando o horário do evento não está sincronizado, o recebimento no servidor é mostrado com essa distinção explícita.
+
 O aplicativo permite acompanhamento, histórico paginado e detalhes das sessões.
 Alertas são consultados com o aplicativo aberto; não há push ou comandos
 remotos. Conclusão observável e estimativa de volume não confirmam ingestão.
@@ -197,7 +199,7 @@ Com JDK 17:
 bash scripts/build_android.sh :app:testDemoDebugUnitTest :app:lintDemoDebug
 ```
 
-São quatro testes JVM de ViewModel. Relatórios ficam em
+São 11 testes JVM: seis de ViewModel e cinco de apresentação dos eventos. Relatórios ficam em
 `android/app/build/reports/`. Esses testes não executam as telas em aparelho.
 
 As regras versionadas podem ser regeneradas com:

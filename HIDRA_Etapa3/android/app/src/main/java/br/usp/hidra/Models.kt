@@ -16,7 +16,8 @@ data class SessionSummary(
 )
 data class ActivityEvent(
     val id: String, val sequence: Long, val type: String, val state: String,
-    val occurredAtMs: Long?, val details: String
+    val occurredAtMs: Long?, val details: String,
+    val data: Map<String, Any?> = emptyMap(), val receivedAtMs: Long? = null
 ) {
     val description: String get() = when(type) {
         "activity_started" -> "Atividade iniciada"
@@ -39,5 +40,6 @@ data class ActivityEvent(
 fun resultLabel(value: String) = when(value) {
     "completed" -> "Sequência observável concluída"
     "aborted" -> "Interrompida"
-    else -> "Em andamento"
+    "in_progress" -> "Em andamento"
+    else -> "Resultado não informado"
 }

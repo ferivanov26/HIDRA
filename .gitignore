@@ -12,6 +12,7 @@ __pycache__/
 # Dependências e artefatos de compilação
 node_modules/
 .gradle/
+.kotlin/
 .pio/
 build/
 *.apk

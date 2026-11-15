@@ -79,7 +79,8 @@ class FirebaseHidraRepository(private val db: FirebaseDatabase, private val auth
         .orderByChild("payload/sequence").observe { snapshot -> snapshot.children.map {
             val p = it.child("payload")
             ActivityEvent(it.key.orEmpty(), p.number("sequence") ?: 0, p.text("type").orEmpty(),
-                p.text("state").orEmpty(), p.number("occurred_at_ms"), p.child("data").value?.toString().orEmpty())
+                p.text("state").orEmpty(), p.number("occurred_at_ms"), p.child("data").value?.toString().orEmpty(),
+                p.child("data").children.associate { field -> field.key.orEmpty() to field.value }, it.number("received_at_ms"))
         }.sortedBy { it.sequence } }
 }
 class FakeHidraRepository: HidraRepository {
@@ -93,12 +94,12 @@ class FakeHidraRepository: HidraRepository {
     override fun history(device: String, before: Long?) = flowOf(listOf(alert, normal).filter { before == null || it.order < before })
     override fun events(device: String, session: String): Flow<List<ActivityEvent>> {
         val values = if(session == alert.id) listOf(
-            ActivityEvent("d1", 1, "activity_started", "E0", now - 30000, "trigger=button"),
-            ActivityEvent("d2", 2, "state_changed", "E1", now - 25000, "previous_state=E0"),
-            ActivityEvent("d3", 3, "state_changed", "E2", now - 20000, "previous_state=E1"),
-            ActivityEvent("d4", 4, "instruction_played", "E2", now - 15000, "instruction_id=fill_cup, attempt=1"),
-            ActivityEvent("d5", 5, "caregiver_alert", "E2", now - 10000, "alert_id=demo_a1, reason=timeout, attempt=3"))
-        else listOf(ActivityEvent("n1", 1, "activity_started", "E0", now - 120000, "trigger=button")) +
+            ActivityEvent("d1", 1, "activity_started", "E0", now - 30000, "trigger=button", mapOf("trigger" to "button")),
+            ActivityEvent("d2", 2, "state_changed", "E1", now - 25000, "previous_state=E0", mapOf("previous_state" to "E0")),
+            ActivityEvent("d3", 3, "state_changed", "E2", now - 20000, "previous_state=E1", mapOf("previous_state" to "E1")),
+            ActivityEvent("d4", 4, "instruction_played", "E2", now - 15000, "instruction_id=fill_cup, attempt=1", mapOf("instruction_id" to "fill_cup", "attempt" to 1)),
+            ActivityEvent("d5", 5, "caregiver_alert", "E2", now - 10000, "alert_id=demo_a1, reason=timeout, attempt=3", mapOf("reason" to "timeout", "attempt" to 3)))
+        else listOf(ActivityEvent("n1", 1, "activity_started", "E0", now - 120000, "trigger=button", mapOf("trigger" to "button"))) +
             (1..5).map { ActivityEvent("n${it+1}", (it+1).toLong(), "state_changed", "E$it", now - 120000 + it*10000, "previous_state=E${it-1}") } +
             ActivityEvent("n7", 7, "activity_completed", "E5", now - 60000, "")
         return flowOf(values)

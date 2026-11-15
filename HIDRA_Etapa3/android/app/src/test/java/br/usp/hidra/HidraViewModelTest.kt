@@ -52,4 +52,43 @@ class HidraViewModelTest {
         assertTrue(vm.state.value.events.isEmpty())
         vm.viewModelScope.cancel()
     }
+    @Test fun deviceLoadFailureCanBeRetriedAfterSuccessfulLogin() = runTest(dispatcher) {
+        vm.viewModelScope.cancel()
+        var attempts=0
+        val delegate=FakeHidraRepository()
+        val repository=object: HidraRepository by delegate {
+            override suspend fun devices(): List<Device> {
+                attempts++
+                if(attempts==1) error("network unavailable")
+                return delegate.devices()
+            }
+        }
+        vm=HidraViewModel(DemoAuthRepository(),repository)
+        vm.login("", ""); runCurrent()
+        assertEquals(Screen.DEVICES,vm.state.value.screen)
+        assertNotNull(vm.state.value.error)
+        vm.retry(); runCurrent()
+        assertEquals(Screen.DASHBOARD,vm.state.value.screen)
+        assertNull(vm.state.value.error)
+        assertEquals(2,attempts)
+        vm.viewModelScope.cancel()
+    }
+    @Test fun switchingDevicesClearsPreviousSession() = runTest(dispatcher) {
+        vm.viewModelScope.cancel()
+        val delegate=FakeHidraRepository()
+        val repository=object: HidraRepository by delegate {
+            override suspend fun devices()=listOf(Device("one","Primeiro"),Device("two","Segundo"))
+        }
+        vm=HidraViewModel(DemoAuthRepository(),repository)
+        vm.login("", ""); runCurrent()
+        vm.selectDevice(vm.state.value.devices.first()); runCurrent()
+        vm.devices(); runCurrent()
+        assertEquals(Screen.DEVICES,vm.state.value.screen)
+        assertNull(vm.state.value.device)
+        assertNull(vm.state.value.currentSession)
+        assertNull(vm.state.value.status)
+        assertTrue(vm.state.value.events.isEmpty())
+        vm.viewModelScope.cancel()
+    }
+
 }

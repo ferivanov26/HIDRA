@@ -17,8 +17,8 @@ android {
         applicationId = "br.usp.hidra"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         buildConfigField("String", "FIREBASE_API_KEY", config("apiKey"))
         buildConfigField("String", "FIREBASE_APP_ID", config("applicationId", "1:1234567890:android:1234567890abcdef"))
         buildConfigField("String", "FIREBASE_PROJECT_ID", config("projectId", "demo-hidra"))

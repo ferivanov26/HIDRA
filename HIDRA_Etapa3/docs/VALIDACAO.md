@@ -149,3 +149,20 @@ activity_active=false; session_id=0004_s001; sequence=4; boot_id=0005
 ```
 
 A ESP32 permaneceu com `esp32-integrated`; `metadata/source=simulator` identifica estes ensaios comandados pela Serial. Não houve ensaio de beber água ou áudio medido na montagem. Os registros sanitizados estão em `.runtime/merge-main/verified-integrated.json`, `serial-integrated.txt` e `restart-serial.txt`, ignorados pelo Git.
+
+## Android 0.2.0 — revisão da interface em 15/11/2026
+
+As capturas enviadas pelo responsável demonstraram no telefone a seleção dos dispositivos vinculados, consulta de presença, histórico e detalhes das sessões reais dos ensaios. Os resultados, contagens e motivos de cancelamento/reinício eram coerentes com os registros anteriores. Essas capturas são da versão 0.1.0; não demonstram a nova interface.
+
+A revisão 0.2.0 acrescenta temas claro/escuro, cartões de status, linha do tempo com descrições em português, detalhes técnicos recolhidos, troca de dispositivos sem logout, botão de atualização da lista e campos de acesso com teclado apropriado/controle de visibilidade da senha. As listas usam LazyColumn e respeitam as áreas do sistema e do teclado.
+
+Correções funcionais:
+
+- A conexão do telefone é acompanhada por NetworkCallback, registrado e removido conforme a coleta do fluxo no ciclo de vida; a indicação não depende de uma leitura isolada da rede.
+- Após login bem-sucedido, falha na consulta dos dispositivos mantém a tela de dispositivos, permitindo repetir a consulta. Antes, o estado podia continuar em LOGIN e o botão de nova tentativa não executava essa consulta.
+- O evento mantém seu horário de ocorrência quando conhecido. Se ausente, a tela identifica explicitamente o timestamp de recebimento como recebimento; não infere o horário do evento nem altera o banco.
+- Resultados desconhecidos não são apresentados como atividade em andamento. Alertas e estados de comunicação desatualizados são identificados como últimos dados recebidos.
+
+Validação: **11 testes JVM aprovados** (seis de ViewModel e cinco de apresentação), incluindo recuperação da lista após falha, limpeza de sessão na troca de dispositivos, motivo de reinício/cancelamento, resolução de alerta, volume ausente e distinção entre horário do evento e recebimento. Três variantes APK compiladas; lint sem erros. Execução: `bash scripts/build_android.sh :app:testDemoDebugUnitTest :app:lintDemoDebug`. Logs locais: `.runtime/android-ui-final.txt`; relatórios em `android/app/build/reports/`.
+
+O APK cloud tem versionCode 2 e versionName 0.2.0, com o mesmo applicationId. A nova interface ainda precisa ser conferida no telefone: atualização sobre a versão anterior, temas claro/escuro, navegação, teclado, aumento de fonte, alerta ativo e perda/retorno de conexão. Nenhuma credencial ou arquivo de execução foi adicionado ao Git.

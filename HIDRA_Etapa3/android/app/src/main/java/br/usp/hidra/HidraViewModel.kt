@@ -43,7 +43,7 @@ class HidraViewModel(private val auth: AuthRepository, private val repo: HidraRe
     private fun loadDevices() {
         devicesJob?.cancel()
         devicesJob = viewModelScope.launch {
-            mutable.update { it.copy(loading=true, error=null) }
+            mutable.update { it.copy(screen=Screen.DEVICES, loading=true, error=null) }
             try {
                 val devices = repo.devices()
                 mutable.update { it.copy(screen=Screen.DEVICES, devices=devices, loading=false) }
@@ -98,6 +98,11 @@ class HidraViewModel(private val auth: AuthRepository, private val repo: HidraRe
             } }
         }
     }
+    fun devices() {
+        cancelObservers()
+        mutable.update { UiState(screen=Screen.DEVICES, devices=it.devices) }
+        loadDevices()
+    }
     fun dashboard() {
         mutable.value.device?.let(::selectDevice)
     }
@@ -114,6 +119,7 @@ class HidraViewModel(private val auth: AuthRepository, private val repo: HidraRe
     fun pause() { cancelObservers() }
     fun resume() {
         val saved = mutable.value
+        if (saved.screen == Screen.DEVICES && auth.signedIn) { loadDevices(); return }
         saved.device?.let {
             selectDevice(it)
             when(saved.screen) {
