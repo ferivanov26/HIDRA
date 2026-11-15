@@ -33,6 +33,8 @@ secrets.h
 .idea/
 *.iml
 .DS_Store
+.~lock.*#
+~$*.docx
 
 # Exportações locais dos emuladores
 .emulator-data/

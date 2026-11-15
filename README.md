@@ -19,7 +19,7 @@ hardware, orquestração local e comunicação IoT/aplicativo.
 
 ## Documentação técnica
 
-- [Relatório completo e fontes da atualização da etapa 3](Documentos/README.md).
+- [Relatório oficial do grupo](Documentos/README.md).
 
 - [Hardware e firmware da etapa 1](documentacao_hardware.md).
 - [Orquestrador da etapa 2](documentacao_orquestrador.md).
