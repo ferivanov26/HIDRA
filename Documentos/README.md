@@ -1,5 +1,15 @@
 # Documentação do projeto
 
+## Versão com a formatação do DOCX original
+
+- [Etapa 3 completa em DOCX](etapa3/ETAPA_3_FORMATADA.docx).
+- [PDF exportado do mesmo DOCX](etapa3/ETAPA_3_FORMATADA.pdf).
+- [Características do modelo e reprodução](etapa3/FORMATACAO_MODELO.md).
+
+Essa versão reutiliza as fontes, estilos, numeração e tabelas do DOCX fornecido pelo responsável. É a versão indicada para transferir a seção para o documento principal. Inclui o planejamento original e a implementação preenchida, com texto e tabelas editáveis.
+
+## Revisão anterior em PDF
+
 [Apostila de Projeto - Grupo 5.pdf](Apostila%20de%20Projeto%20-%20Grupo%205.pdf) é o relatório completo. A revisão de 15/11/2026 incorpora a implementação e a validação da etapa 3, a partir do relatório da main `b5fd031` e do software `6573a7d`.
 
 Os arquivos editáveis e as evidências utilizadas estão em `etapa3/`:
