@@ -1,5 +1,5 @@
 # HIDRA
-Repositório destinado para o projeto HIDRA
+Hidratação Inteligente por Detecção e Resposta Automatizada — PCS3930, Grupo 5.
 
 Projeto de hidratação assistida com ESP32, sensores, instruções em áudio e
 acompanhamento pelo cuidador. O desenvolvimento é dividido em aquisição de
@@ -10,6 +10,8 @@ hardware, orquestração local e comunicação IoT/aplicativo.
 | Caminho | Conteúdo |
 |---|---|
 | [HIDRA_Etapa1](HIDRA_Etapa1/README.md) | Aquisição dos sensores e atuação local; projeto Arduino IDE |
+| [HIDRA_Etapa2](HIDRA_Etapa2/README.md) | Hardware da etapa 1, orquestrador E0–E5 e interface IoT |
+| `tests/` | Testes do orquestrador e firmware no computador |
 | [HIDRA_Etapa3](HIDRA_Etapa3/README.md) | Módulo IoT, Firebase, simulador Python, aplicativo Android e testes |
 | `Hardware/` | Programas de teste individual dos componentes |
 | `Audios/` | Faixas de áudio do dispositivo |
@@ -18,6 +20,7 @@ hardware, orquestração local e comunicação IoT/aplicativo.
 ## Documentação técnica
 
 - [Hardware e firmware da etapa 1](documentacao_hardware.md).
+- [Orquestrador da etapa 2](documentacao_orquestrador.md).
 - [IoT, Firebase e aplicativo da etapa 3](documentacao_iot_firebase_mobile.md).
 - [Contrato dos eventos remotos](HIDRA_Etapa3/docs/CONTRATO.md).
 - [Interface da etapa 3 com o orquestrador](HIDRA_Etapa3/docs/INTEGRACAO.md).
